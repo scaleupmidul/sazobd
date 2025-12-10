@@ -173,16 +173,30 @@ const ProductDetailsPage: React.FC = () => {
   const selectedImage = images[currentImageIndex] || '';
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12">
-      <button onClick={() => navigate('/shop')} className="mb-6 sm:mb-8 flex items-center text-stone-600 hover:text-stone-900 transition text-sm w-full">
-        <ChevronDown className="w-4 h-4 transform rotate-90" /> Back to Shop
+    <main className="max-w-7xl mx-auto sm:px-6 lg:px-8 pb-16 sm:pb-12 sm:pt-8 bg-white sm:bg-transparent min-h-screen sm:min-h-fit">
+      
+      {/* Mobile Sticky Header */}
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-stone-100 px-4 py-3 sm:hidden flex items-center shadow-sm">
+        <button onClick={() => navigate('/shop')} className="flex items-center text-stone-800 font-medium text-sm">
+             <ChevronLeft className="w-5 h-5 mr-1" /> Back
+        </button>
+      </div>
+
+      {/* Desktop Back Button */}
+      <button onClick={() => navigate('/shop')} className="hidden sm:flex mb-6 sm:mb-8 items-center text-stone-600 hover:text-stone-900 transition text-sm w-full">
+        <ChevronLeft className="w-4 h-4 mr-1" /> Back to Shop
       </button>
 
-      <div className="lg:grid lg:grid-cols-2 lg:gap-12 bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-stone-200">
+      {/* Product Content Wrapper */}
+      {/* Mobile: Remove standard padding and rounding to allow edge-to-edge image */}
+      {/* Desktop: Keep original card look */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-12 bg-white sm:p-8 sm:rounded-xl sm:shadow-lg sm:border sm:border-stone-200">
+        
+        {/* Left Column: Images */}
         <div className="space-y-4">
           <div 
-            className="w-full relative bg-stone-100 rounded-xl overflow-hidden group touch-pan-y"
-            // Consistent aspect ratio with product cards (3:4)
+            className="w-full relative bg-stone-100 sm:rounded-xl overflow-hidden group touch-pan-y"
+            // Ensure 3:4 Aspect Ratio on all devices
             style={{ aspectRatio: '3/4' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
@@ -231,30 +245,31 @@ const ProductDetailsPage: React.FC = () => {
           
           {/* Thumbnails Container */}
           {images.length > 0 && (
-              <div className="mt-4 border border-stone-200 rounded-xl p-2 sm:p-3 bg-stone-50/50">
-                  <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-                    {images.map((img, index) => (
-                      <div 
-                        key={index}
-                        // Standardized size and removed scale effect
-                        // Aspect ratio 3:4 to match parent
-                        className={`relative w-20 sm:w-24 aspect-[3/4] flex-shrink-0 rounded-lg cursor-pointer transition-all duration-200 border-2 overflow-hidden ${index === currentImageIndex ? 'border-pink-600 ring-1 ring-pink-600 opacity-100' : 'border-stone-200 hover:border-pink-300 opacity-70 hover:opacity-100'}`}
-                        onClick={() => setCurrentImageIndex(index)}
-                      >
-                        <img
-                            src={img}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                        />
+              <div className="px-4 sm:px-0">
+                  <div className="mt-4 border border-stone-200 rounded-xl p-2 sm:p-3 bg-stone-50/50">
+                      <div className="flex gap-3 overflow-x-auto scrollbar-hide">
+                        {images.map((img, index) => (
+                          <div 
+                            key={index}
+                            className={`relative w-20 sm:w-24 aspect-[3/4] flex-shrink-0 rounded-lg cursor-pointer transition-all duration-200 border-2 overflow-hidden ${index === currentImageIndex ? 'border-pink-600 ring-1 ring-pink-600 opacity-100' : 'border-stone-200 hover:border-pink-300 opacity-70 hover:opacity-100'}`}
+                            onClick={() => setCurrentImageIndex(index)}
+                          >
+                            <img
+                                src={img}
+                                alt={`Thumbnail ${index + 1}`}
+                                className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
                   </div>
               </div>
           )}
         </div>
 
-        <div className="mt-6 lg:mt-0 space-y-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-stone-900">{product.name}</h1>
+        {/* Right Column: Details - Add horizontal padding on mobile */}
+        <div className="mt-6 lg:mt-0 space-y-6 px-4 sm:px-0">
+          <h1 className="text-2xl sm:text-4xl font-bold text-stone-900">{product.name}</h1>
           <div className="flex items-baseline space-x-3">
             {product.onSale && <span className="text-lg text-stone-500 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>}
             <span className="text-3xl font-medium text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
