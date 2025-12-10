@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AppState, Product, CartItem, Order, OrderStatus, ContactMessage, AppSettings, AdminProductsResponse } from '../types';
@@ -87,18 +88,7 @@ export const useAppStore = create<AppState>()(
                 let finalProducts: Product[] = [];
 
                 if (homeData.products && homeData.products.length > 0) {
-                    finalProducts = homeData.products.map((p: Product) => {
-                        const mock = MOCK_PRODUCTS_DATA.find(m => m.name === p.name);
-                        if (mock && (!p.images || p.images.length < 3)) {
-                            const currentImages = p.images || [];
-                            const uniqueMockImages = mock.images.filter(img => !currentImages.includes(img));
-                            const needed = 3 - currentImages.length;
-                            if (uniqueMockImages.length > 0) {
-                                return { ...p, images: [...currentImages, ...uniqueMockImages.slice(0, needed)] };
-                            }
-                        }
-                        return p;
-                    });
+                    finalProducts = homeData.products;
                 } else {
                     finalProducts = MOCK_PRODUCTS_DATA;
                 }
@@ -175,20 +165,7 @@ export const useAppStore = create<AppState>()(
                 if (!res.ok) throw new Error('Failed to fetch all products');
                 let allProducts: Product[] = await res.json();
                 
-                if (allProducts.length > 0) {
-                     allProducts = allProducts.map((p: Product) => {
-                        const mock = MOCK_PRODUCTS_DATA.find(m => m.name === p.name);
-                        if (mock && (!p.images || p.images.length < 3)) {
-                            const currentImages = p.images || [];
-                            const uniqueMockImages = mock.images.filter(img => !currentImages.includes(img));
-                            const needed = 3 - currentImages.length;
-                            if (uniqueMockImages.length > 0) {
-                                return { ...p, images: [...currentImages, ...uniqueMockImages.slice(0, needed)] };
-                            }
-                        }
-                        return p;
-                    });
-                } else {
+                if (!allProducts || allProducts.length === 0) {
                     allProducts = MOCK_PRODUCTS_DATA;
                 }
 
