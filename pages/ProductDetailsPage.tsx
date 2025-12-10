@@ -32,14 +32,16 @@ const Accordion: React.FC<{ title: string; children: React.ReactNode; defaultOpe
 // --- Skeleton Loader ---
 const ProductDetailsPageSkeleton: React.FC = () => (
   <main className="max-w-[1600px] mx-auto px-0 lg:px-8 pt-0 lg:pt-8 animate-pulse">
-    <div className="lg:grid lg:grid-cols-12 lg:gap-16">
-      <div className="lg:col-span-7 grid grid-cols-2 gap-2">
-        <div className="aspect-[3/4] bg-stone-200 w-full col-span-2 lg:col-span-1"></div>
-        <div className="aspect-[3/4] bg-stone-200 w-full hidden lg:block"></div>
-        <div className="aspect-[3/4] bg-stone-200 w-full hidden lg:block"></div>
-        <div className="aspect-[3/4] bg-stone-200 w-full hidden lg:block"></div>
+    <div className="lg:grid lg:grid-cols-2 lg:gap-12">
+      <div className="w-full max-w-[550px] mx-auto">
+        <div className="aspect-[3/4] bg-stone-200 w-full rounded-lg"></div>
+        <div className="flex gap-4 mt-4">
+             <div className="w-20 h-24 bg-stone-200 rounded"></div>
+             <div className="w-20 h-24 bg-stone-200 rounded"></div>
+             <div className="w-20 h-24 bg-stone-200 rounded"></div>
+        </div>
       </div>
-      <div className="lg:col-span-5 px-4 lg:px-0 mt-8 lg:mt-0 space-y-8">
+      <div className="px-4 lg:px-0 mt-8 lg:mt-0 space-y-8 max-w-xl">
         <div className="h-8 bg-stone-200 rounded w-3/4"></div>
         <div className="h-6 bg-stone-200 rounded w-1/4"></div>
         <div className="space-y-2 pt-8">
@@ -216,10 +218,11 @@ const ProductDetailsPage: React.FC = () => {
             <span className="text-stone-900">{product.name}</span>
         </nav>
 
-        <div className="lg:grid lg:grid-cols-12 lg:gap-16 xl:gap-24 items-start">
+        {/* CHANGED: Grid layout adjusted to 2 columns with reduced gap for a more compact look */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-12 xl:gap-16 items-start justify-center">
             
             {/* --- LEFT COLUMN: IMAGES (Slider with Thumbnails) --- */}
-            <div className="lg:col-span-7">
+            <div className="w-full">
                 
                 {/* Mobile: Full Screen Swipeable Slider (Keep existing) */}
                 <div 
@@ -255,7 +258,8 @@ const ProductDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Desktop: Enhanced Slider with Thumbnails */}
-                <div className="hidden lg:flex flex-col gap-6">
+                {/* CHANGED: Added max-w-[550px] and mx-auto to constrain size */}
+                <div className="hidden lg:flex flex-col gap-5 max-w-[550px] lg:ml-auto lg:mr-4">
                     {/* Main Image Stage */}
                     <div className="relative w-full aspect-[3/4] bg-stone-100 rounded-lg overflow-hidden group shadow-sm border border-stone-100">
                         {images.length > 0 ? (
@@ -319,7 +323,8 @@ const ProductDetailsPage: React.FC = () => {
             </div>
 
             {/* --- RIGHT COLUMN: DETAILS (Sticky on Desktop) --- */}
-            <div className="lg:col-span-5 lg:sticky lg:top-24 h-fit mt-6 lg:mt-0 px-4 sm:px-6 lg:px-0">
+            {/* CHANGED: Restricted max-width to 500px to match image better */}
+            <div className="lg:sticky lg:top-24 h-fit mt-6 lg:mt-0 px-4 sm:px-6 lg:px-0 max-w-[500px]">
                 
                 <div className="mb-8 border-b border-stone-100 pb-6">
                     <h1 className="text-2xl lg:text-4xl font-light text-stone-900 leading-tight tracking-tight mb-3">{product.name}</h1>
