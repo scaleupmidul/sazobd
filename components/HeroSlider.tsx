@@ -102,7 +102,9 @@ const HeroSlider: React.FC = () => {
                                     style={{ opacity: imageOpacity, transition: transitionStyle }}
                                 />
                             </picture>
-                            <div className={`absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent transition-opacity duration-300 ${isFirstSlide || isLoaded ? 'opacity-100' : 'opacity-0'}`}></div>
+                            {showSliderText && (
+                                <div className={`absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent transition-opacity duration-300 ${isFirstSlide || isLoaded ? 'opacity-100' : 'opacity-0'}`}></div>
+                            )}
                         </div>
                     );
                 })}
