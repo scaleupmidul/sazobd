@@ -188,15 +188,14 @@ const ProductDetailsPage: React.FC = () => {
       </button>
 
       {/* Product Content Wrapper */}
-      {/* Mobile: Remove standard padding and rounding to allow edge-to-edge image */}
-      {/* Desktop: Keep original card look */}
-      <div className="lg:grid lg:grid-cols-2 lg:gap-12 bg-white sm:p-8 sm:rounded-xl sm:shadow-lg sm:border sm:border-stone-200">
+      {/* Changed: Added px-4 for mobile to enforce padding consistent with other pages */}
+      <div className="px-4 pt-6 sm:px-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:gap-12 bg-white sm:rounded-xl sm:shadow-lg sm:border sm:border-stone-200">
         
         {/* Left Column: Images */}
         <div className="space-y-4">
           <div 
-            className="w-full relative bg-stone-100 sm:rounded-xl overflow-hidden group touch-pan-y"
-            // Ensure 3:4 Aspect Ratio on all devices for consistency
+            className="w-full relative bg-stone-100 rounded-xl overflow-hidden group touch-pan-y"
+            // Changed: rounded-xl is now applied on mobile too for consistency ("same hobe")
             style={{ aspectRatio: '3/4' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
@@ -245,7 +244,7 @@ const ProductDetailsPage: React.FC = () => {
           
           {/* Thumbnails Container */}
           {images.length > 0 && (
-              <div className="px-4 sm:px-0">
+              <div className="">
                   <div className="mt-4 border border-stone-200 rounded-xl p-2 sm:p-3 bg-stone-50/50">
                       <div className="flex gap-3 overflow-x-auto scrollbar-hide">
                         {images.map((img, index) => (
@@ -267,8 +266,8 @@ const ProductDetailsPage: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column: Details - Add horizontal padding on mobile */}
-        <div className="mt-6 lg:mt-0 space-y-6 px-4 sm:px-0">
+        {/* Right Column: Details */}
+        <div className="mt-6 lg:mt-0 space-y-6">
           <h1 className="text-2xl sm:text-4xl font-bold text-stone-900">{product.name}</h1>
           <div className="flex items-baseline space-x-3">
             {product.onSale && <span className="text-lg text-stone-500 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>}
