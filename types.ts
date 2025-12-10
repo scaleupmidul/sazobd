@@ -1,3 +1,4 @@
+
 // FIX: Import Dispatch and SetStateAction types from React to resolve namespace errors.
 import type { Dispatch, SetStateAction } from 'react';
 
@@ -7,6 +8,7 @@ export interface Product {
   name: string;
   category: string;
   price: number;
+  regularPrice?: number; // Added: The original price before discount
   description: string;
   fabric: string;
   colors: string[];
