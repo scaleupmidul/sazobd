@@ -473,7 +473,7 @@ const ProductDetailsPage: React.FC = () => {
                     </Accordion>
                     <Accordion title="Shipping & Returns" icon={Truck}>
                          <p className="mb-2"><strong>Standard Delivery:</strong> 2-4 Business Days.</p>
-                         <p>Please Check the product in front of the delivery person. Once they leave, we cannot take responsibility for any issues. (ডেলিভারি গ্রহণের আগে ডেলিভারি ম্যানের সামনে প্রোডাক্টটি চেক করে নিন। ডেলিভারি ম্যান চলে গেলে কোনো সমস্যা গ্রহণযোগ্য হবে না)</p>
+                         <p>Please Check the product in front of the delivery person. Once they leave, we cannot take responsibility for any issues.</p>
                     </Accordion>
                 </div>
 
