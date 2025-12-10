@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '../types';
 import { ShoppingCart, ChevronDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -238,22 +236,25 @@ const ProductDetailsPage: React.FC = () => {
             )}
           </div>
           
-          {/* Thumbnails - Always show if at least 1 image exists to confirm loaded state */}
+          {/* Thumbnails Container */}
           {images.length > 0 && (
-              <div className="flex space-x-3 overflow-x-auto p-1 scrollbar-hide">
-                {images.map((img, index) => (
-                  <div 
-                    key={index}
-                    className={`relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg cursor-pointer transition duration-300 border-2 overflow-hidden ${index === currentImageIndex ? 'border-pink-600 ring-2 ring-pink-100 scale-105' : 'border-transparent opacity-70 hover:opacity-100 hover:border-stone-200'}`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  >
-                    <img
-                        src={img}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                    />
+              <div className="mt-4 border border-stone-200 rounded-xl p-2 sm:p-3 bg-stone-50/50">
+                  <div className="flex gap-3 overflow-x-auto scrollbar-hide">
+                    {images.map((img, index) => (
+                      <div 
+                        key={index}
+                        // Standardized size and removed scale effect
+                        className={`relative w-20 sm:w-24 aspect-[3.5/4] flex-shrink-0 rounded-lg cursor-pointer transition-all duration-200 border-2 overflow-hidden ${index === currentImageIndex ? 'border-pink-600 ring-1 ring-pink-600 opacity-100' : 'border-stone-200 hover:border-pink-300 opacity-70 hover:opacity-100'}`}
+                        onClick={() => setCurrentImageIndex(index)}
+                      >
+                        <img
+                            src={img}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
               </div>
           )}
         </div>
