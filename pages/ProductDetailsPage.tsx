@@ -273,10 +273,10 @@ const ProductDetailsPage: React.FC = () => {
                         <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
                     )}
                     
-                    {/* Status Tags (Mobile) - UPDATED COLORS */}
+                    {/* Status Tags (Mobile) - UPDATED COLORS & REMOVED ROUNDED */}
                     <div className="absolute bottom-4 left-4 flex gap-2">
-                         {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm rounded-full">NEW</span>}
-                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm rounded-full">BEST</span>}
+                         {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">NEW</span>}
+                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
                     </div>
 
                     {/* Dots Indicator */}
@@ -326,10 +326,10 @@ const ProductDetailsPage: React.FC = () => {
                                     </>
                                 )}
 
-                                {/* Badges (Desktop) - UPDATED COLORS */}
+                                {/* Badges (Desktop) - UPDATED COLORS & REMOVED ROUNDED */}
                                 <div className="absolute top-6 left-6 flex flex-col gap-2 pointer-events-none">
-                                    {product.isNewArrival && <span className="bg-pink-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-full">NEW</span>}
-                                    {product.isTrending && <span className="bg-amber-400 text-stone-900 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-full">BEST</span>}
+                                    {product.isNewArrival && <span className="bg-pink-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">NEW</span>}
+                                    {product.isTrending && <span className="bg-amber-400 text-stone-900 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
                                 </div>
                             </>
                         ) : (
