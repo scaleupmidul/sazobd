@@ -273,10 +273,10 @@ const ProductDetailsPage: React.FC = () => {
                         <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
                     )}
                     
-                    {/* Status Tags (Mobile) - UPDATED: Removed Sale, Added BEST */}
+                    {/* Status Tags (Mobile) - UPDATED COLORS */}
                     <div className="absolute bottom-4 left-4 flex gap-2">
-                         {product.isNewArrival && <span className="bg-white text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">New In</span>}
-                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
+                         {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm rounded-full">NEW</span>}
+                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm rounded-full">BEST</span>}
                     </div>
 
                     {/* Dots Indicator */}
@@ -326,10 +326,10 @@ const ProductDetailsPage: React.FC = () => {
                                     </>
                                 )}
 
-                                {/* Badges (Desktop) - UPDATED: Removed Sale, Added BEST */}
+                                {/* Badges (Desktop) - UPDATED COLORS */}
                                 <div className="absolute top-6 left-6 flex flex-col gap-2 pointer-events-none">
-                                    {product.isNewArrival && <span className="bg-stone-900 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">New In</span>}
-                                    {product.isTrending && <span className="bg-amber-400 text-stone-900 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
+                                    {product.isNewArrival && <span className="bg-pink-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-full">NEW</span>}
+                                    {product.isTrending && <span className="bg-amber-400 text-stone-900 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-full">BEST</span>}
                                 </div>
                             </>
                         ) : (
@@ -518,7 +518,7 @@ const ProductDetailsPage: React.FC = () => {
                 onClick={() => setIsSizeGuideOpen(false)}
             >
                 {/* Increased max-width from max-w-lg to max-w-4xl for larger image */}
-                <div className="relative max-w-4xl w-full bg-white rounded-xl shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                <div className="relative max-w-4xl w-full bg-white shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                     
                     {/* Header with Title and Close 'X' */}
                     <div className="flex justify-between items-center p-4 border-b border-stone-100">
