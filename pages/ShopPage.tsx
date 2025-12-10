@@ -165,7 +165,7 @@ const ShopPage: React.FC = () => {
   const showSkeletons = isInitialLoading && products.length === 0;
 
   return (
-    <main className="max-w-screen-2xl mx-auto w-full px-4 pt-0 lg:pt-12 pb-24 lg:px-8">
+    <main className="max-w-screen-2xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-0 lg:pt-12 pb-24">
       
       {/* Desktop Header */}
       <div className="hidden lg:block text-center mt-8 mb-12">
@@ -173,7 +173,8 @@ const ShopPage: React.FC = () => {
       </div>
 
       {/* Mobile Sticky Professional Header & Action Bar */}
-      <div className="lg:hidden sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-stone-100 -mx-4 px-4 py-3 mb-6 flex justify-between items-center shadow-sm">
+      {/* Reduced negative margin (-mx-2) to match container px-2 */}
+      <div className="lg:hidden sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-stone-100 -mx-2 px-3 py-3 mb-4 flex justify-between items-center shadow-sm">
           <div>
               <h1 className="text-lg font-extrabold text-stone-900 leading-none tracking-tight">Shop All</h1>
               <p className="text-[10px] text-stone-500 font-semibold mt-1 tracking-wide uppercase">{filteredProducts.length} Products Found</p>
@@ -221,7 +222,7 @@ const ShopPage: React.FC = () => {
 
         <section className="lg:col-span-3">
           {showSkeletons ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
               {[...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)}
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -230,7 +231,8 @@ const ShopPage: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+              {/* Reduced gap to gap-2 for mobile to maximize card width, gap-3/4 on larger screens */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                 {currentProducts.map(p => (
                   <ProductCard key={p.id} product={p} />
                 ))}
