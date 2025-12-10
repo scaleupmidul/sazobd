@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { ShoppingCart, X, ArrowRight } from 'lucide-react';
@@ -53,7 +54,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClos
       navigate(`/product/${linkId}`);
   }
 
-  const originalPrice = product.price + 200;
+  const regularPrice = product.regularPrice || product.price + 200;
 
   return (
     <div 
@@ -79,7 +80,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClos
           <div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{product.name}</h2>
             <div className="flex items-baseline space-x-3 mt-2">
-              <span className="text-base text-gray-500 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>
+              <span className="text-base text-gray-500 line-through">৳{regularPrice.toLocaleString('en-IN')}</span>
               <span className="text-2xl font-bold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
             </div>
             <p className="text-sm text-gray-700 leading-relaxed mt-4">{product.description}</p>
