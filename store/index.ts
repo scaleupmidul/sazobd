@@ -14,17 +14,10 @@ const DEFAULT_SETTINGS: AppSettings = {
     onlinePaymentInfo: 'অর্ডার কনফার্ম করতে ডেলিভারি চার্জ অগ্রিম প্রদান করুন —\n<b>01909285883 (Personal)</b>\nBkash / Nagad\nএবং নিচের তথ্যগুলো পূরণ করুন:',
     onlinePaymentInfoStyles: { fontSize: '0.875rem' },
     codEnabled: true, onlinePaymentEnabled: true, onlinePaymentMethods: [],
-    sliderImages: [
-        { id: 1, title: "The Festive Silk Collection", subtitle: "Elegance and shimmer for every occasion. | New Silk Collection", color: "text-pink-600", image: SLIDER_IMAGE_URLS.silk, mobileImage: SLIDER_MOBILE_IMAGE_URLS.silk },
-        { id: 2, title: "Comfortable Lawn Arrivals", subtitle: "Breathe easy with our new cotton designs. | Comfortable Lawn Attire", color: "text-blue-600", image: SLIDER_IMAGE_URLS.lawn, mobileImage: SLIDER_MOBILE_IMAGE_URLS.lawn },
-        { id: 3, title: "Grand Party Wear", subtitle: "Unveil the ultimate glamour this season. | Grand Party Dress", color: "text-purple-600", image: SLIDER_IMAGE_URLS.party, mobileImage: SLIDER_MOBILE_IMAGE_URLS.party }
-    ], 
-    categoryImages: [
-        { categoryName: "Cotton", image: CATEGORY_IMAGE_URLS.cotton },
-        { categoryName: "Silk", image: CATEGORY_IMAGE_URLS.silk },
-        { categoryName: "Party Wear", image: CATEGORY_IMAGE_URLS.partyWear }
-    ], 
-    categories: ["Cotton", "Silk", "Party Wear"], 
+    // Empty defaults to prevent flash of wrong content (FODC)
+    sliderImages: [], 
+    categoryImages: [], 
+    categories: [], 
     shippingOptions: [], productPagePromoImage: '',
     contactAddress: '', contactPhone: '', contactEmail: '', whatsappNumber: '', showWhatsAppButton: false,
     showCityField: true,
@@ -46,7 +39,7 @@ export const useAppStore = create<AppState>()(
         cart: [],
         selectedProduct: null,
         notification: null,
-        loading: false, // Start as not loading to skip skeletons. Components will re-render when fetch completes.
+        loading: true, // Start as loading to show Skeletons immediately instead of empty space/mock data
         isAdminAuthenticated: !!getTokenFromStorage(),
         cartTotal: 0,
         fullProductsLoaded: false,
