@@ -104,11 +104,11 @@ const ImageInput: React.FC<ImageInputProps> = ({ currentImage, onImageChange, op
 
 const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) => Promise<void>, onClose: () => void }> = ({ product, onSave, onClose }) => {
     // Initialize form data
-    // For displayOrder fields: if they are undefined, 0, or 1000, initialize as empty string to show placeholder
     const [formData, setFormData] = useState({
         name: product?.name || '',
         category: product?.category || '',
         price: product?.price || 0,
+        regularPrice: product?.regularPrice || 0,
         description: product?.description || '',
         fabric: product?.fabric || '',
         colors: product?.colors.join(', ') || '',
@@ -130,6 +130,16 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
         const checked = (e.target as HTMLInputElement).checked;
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
+
+    // When toggling onSale, default regularPrice to price + something if not set
+    const handleSaleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setFormData(prev => ({ 
+            ...prev, 
+            onSale: checked,
+            regularPrice: (checked && !prev.regularPrice) ? Number(prev.price) + 200 : prev.regularPrice 
+        }));
+    }
 
     const handleImageChange = (name: string, value: string) => {
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -156,14 +166,13 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
             description: formData.description,
             fabric: formData.fabric,
             price: Number(formData.price),
+            regularPrice: formData.onSale ? Number(formData.regularPrice) : undefined,
             colors: formData.colors.split(',').map(s => s.trim()).filter(Boolean),
             sizes: formData.sizes,
             images: [formData.image1, formData.image2, formData.image3].filter(Boolean),
             isNewArrival: formData.isNewArrival,
-            // Ensure empty input or 0 is saved as 1000 (default)
             newArrivalDisplayOrder: Number(formData.newArrivalDisplayOrder) || 1000,
             isTrending: formData.isTrending,
-            // Ensure empty input or 0 is saved as 1000 (default)
             trendingDisplayOrder: Number(formData.trendingDisplayOrder) || 1000,
             onSale: formData.onSale,
         };
@@ -180,8 +189,11 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <input name="name" value={formData.name} onChange={handleChange} placeholder="Product Name" className="p-2 border rounded w-full md:col-span-2 bg-white text-black" required/>
                             <input name="category" value={formData.category} onChange={handleChange} placeholder="Category" className="p-2 border rounded w-full bg-white text-black" required/>
-                            <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder="Price" className="p-2 border rounded w-full bg-white text-black" required/>
-                             <input name="fabric" value={formData.fabric} onChange={handleChange} placeholder="Fabric" className="p-2 border rounded w-full md:col-span-2 bg-white text-black"/>
+                            <div className="w-full">
+                                <label className="text-xs text-gray-600 block mb-1">Selling Price</label>
+                                <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder="Price" className="p-2 border rounded w-full bg-white text-black" required/>
+                            </div>
+                             <input name="fabric" value={formData.fabric} onChange={handleChange} placeholder="Fabric" className="p-2 border rounded w-full bg-white text-black mt-auto"/>
                             <input name="colors" value={formData.colors} onChange={handleChange} placeholder="Colors (comma separated)" className="p-2 border rounded w-full md:col-span-2 bg-white text-black"/>
                             
                             <div className="md:col-span-2 space-y-2 p-3 border rounded-lg bg-gray-50">
@@ -320,11 +332,26 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
                                     )}
                                 </div>
 
-                                <div className="flex items-center">
+                                {/* On Sale Section with Custom Regular Price */}
+                                <div className="flex items-center flex-wrap gap-4">
                                     <label className="flex items-center text-gray-800 cursor-pointer select-none">
-                                        <input type="checkbox" name="onSale" checked={formData.onSale} onChange={handleChange} className="w-4 h-4 text-pink-600 rounded mr-2"/>
+                                        <input type="checkbox" name="onSale" checked={formData.onSale} onChange={handleSaleToggle} className="w-4 h-4 text-pink-600 rounded mr-2"/>
                                         <span className="font-medium">On Sale</span>
                                     </label>
+                                    
+                                    {formData.onSale && (
+                                        <div className="flex-1 min-w-[200px] animate-fadeIn">
+                                            <label className="text-xs text-gray-600 block mb-1">Regular Price (Previous Price)</label>
+                                            <input 
+                                                type="number" 
+                                                name="regularPrice" 
+                                                value={formData.regularPrice} 
+                                                onChange={handleChange} 
+                                                className="w-full p-2 border rounded bg-white text-black text-sm"
+                                                placeholder="e.g. 2500"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -498,10 +525,16 @@ const AdminProductsPage: React.FC = () => {
                                             <div className="flex flex-col gap-1 items-center">
                                                 {product.isNewArrival && <span className="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-full text-[10px] font-bold">NEW</span>}
                                                 {product.isTrending && <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-bold">TRENDING</span>}
-                                                {!product.isNewArrival && !product.isTrending && <span className="text-gray-400 text-xs">-</span>}
+                                                {product.onSale && <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-[10px] font-bold">SALE</span>}
+                                                {!product.isNewArrival && !product.isTrending && !product.onSale && <span className="text-gray-400 text-xs">-</span>}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">৳{product.price.toLocaleString()}</td>
+                                        <td className="px-6 py-4">
+                                            <div>৳{product.price.toLocaleString()}</div>
+                                            {product.onSale && product.regularPrice && (
+                                                <div className="text-xs text-gray-400 line-through">৳{product.regularPrice.toLocaleString()}</div>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4 text-right space-x-2">
                                             <button onClick={() => handleEdit(product)} className="p-2 text-blue-500 hover:bg-blue-100 rounded-full"><Edit className="w-4 h-4"/></button>
                                             <button onClick={() => handleDelete(product.id)} className="p-2 text-red-500 hover:bg-red-100 rounded-full"><Trash2 className="w-4 h-4"/></button>
