@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
@@ -111,10 +112,12 @@ const HomePage: React.FC = () => {
     <>
       <HeroSlider />
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24">
+      {/* Reduced px-4 to px-2 on mobile */}
+      <main className="max-w-[1440px] mx-auto px-2 sm:px-6 lg:px-8 pt-16 sm:pt-24">
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="New Arrivals" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Reduced gap-4 to gap-2 on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
@@ -139,7 +142,8 @@ const HomePage: React.FC = () => {
 
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="Trending Products" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Reduced gap-4 to gap-2 on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
@@ -161,9 +165,10 @@ const HomePage: React.FC = () => {
 
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="Explore By Category" />
-          <div className="flex flex-wrap justify-center -mx-2 sm:-mx-3">
+          {/* Adjusted padding logic for wider cards: -mx-1 and p-1 */}
+          <div className="flex flex-wrap justify-center -mx-1 sm:-mx-3">
             {categories.map(cat => (
-              <div key={cat} className="w-1/2 md:w-1/3 lg:w-1/4 p-2 sm:p-3">
+              <div key={cat} className="w-1/2 md:w-1/3 lg:w-1/4 p-1 sm:p-3">
                 <CategoryCard 
                   categoryName={cat}
                   imageUrl={getCategoryImage(cat)}
