@@ -53,17 +53,26 @@ const App: React.FC = () => {
         const urlId = productMatch[1].split('?')[0];
         
         // Find product by numeric productId (preferred) or legacy id
-        const product = products.find(p => p.productId === urlId || p.id === urlId);
+        const productFromList = products.find(p => p.productId === urlId || p.id === urlId);
+
+        // Critical Fix: Prevent overwriting detailed product data with truncated list data on refresh.
+        // The homepage API returns products with only 1 image for performance. 
+        // If we already have a selectedProduct with more images (fetched via refreshProduct), preserve it.
+        if (selectedProduct && (selectedProduct.productId === urlId || selectedProduct.id === urlId)) {
+             if (productFromList && (productFromList.images || []).length < (selectedProduct.images || []).length) {
+                 return; 
+             }
+        }
 
         // Update selectedProduct if:
         // 1. We found a product AND it's different from the currently selected one (reference check)
         // 2. Or if we haven't selected anything yet.
-        if (product && selectedProduct !== product) {
-            setSelectedProduct(product);
-        } else if (!product && selectedProduct && (selectedProduct.productId !== urlId && selectedProduct.id !== urlId)) {
+        if (productFromList && selectedProduct !== productFromList) {
+            setSelectedProduct(productFromList);
+        } else if (!productFromList && selectedProduct && (selectedProduct.productId !== urlId && selectedProduct.id !== urlId)) {
              // If product isn't found in list (e.g. direct link before load), clear selection or keep waiting
              // For now, we leave it to allow loadInitialData to populate it later
-        } else if (!product && !selectedProduct) {
+        } else if (!productFromList && !selectedProduct) {
              // Potentially handle 404 here or wait for loading
         }
     } else {
