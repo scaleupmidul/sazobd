@@ -48,7 +48,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
                     )}
                 </div>
             </div>
-            <div className="p-3 sm:p-4 space-y-1.5 flex flex-col flex-1">
+            {/* Reduced internal padding on mobile (p-2) to allow more content width */}
+            <div className="p-2 sm:p-4 space-y-1.5 flex flex-col flex-1">
                 <h3 className="text-sm sm:text-lg font-medium text-stone-900 truncate" title={product.name}>{product.name}</h3>
                 <p className="text-xs text-pink-600 font-medium">Fabric: {product.fabric}</p>
 
