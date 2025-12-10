@@ -1,90 +1,186 @@
 
-import React, { useState, memo } from 'react';
-import { ArrowRight } from 'lucide-react';
-import { Product } from '../types';
+import React from 'react';
+import ProductCard from '../components/ProductCard';
+import HeroSlider from '../components/HeroSlider';
+import CategoryCard from '../components/CategoryCard';
 import { useAppStore } from '../store';
+import { Product } from '../types';
 
-interface ProductCardProps {
-  product: Product;
-  priority?: boolean;
-}
+const SectionTitle: React.FC<{ title: string }> = ({ title }) => (
+  <h2 className="text-3xl sm:text-4xl text-center text-stone-900 mb-8 sm:mb-12">
+    {title}
+  </h2>
+);
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) => {
-    const [isImageLoaded, setIsImageLoaded] = useState(false);
-    const regularPrice = product.regularPrice || product.price + 200; // Fallback only if not set in DB yet
-    const navigate = useAppStore(state => state.navigate);
+// Robust, clean box-structure skeleton without card container
+const ProductCardSkeleton: React.FC = () => (
+  <div className="flex flex-col w-full h-full">
+    {/* Image Box */}
+    <div className="aspect-[3/4] bg-stone-200 rounded-lg w-full animate-pulse mb-4" />
+    {/* Content Boxes */}
+    <div className="flex flex-col space-y-2">
+      {/* Title */}
+      <div className="h-6 bg-stone-200 rounded w-3/4 animate-pulse" />
+      {/* Price */}
+      <div className="h-6 bg-stone-200 rounded w-1/4 animate-pulse" />
+      {/* Button */}
+      <div className="h-10 bg-stone-200 rounded-full w-full animate-pulse mt-2" />
+    </div>
+  </div>
+);
 
-    // Use productId (numeric) for the URL if available, fallback to id
-    const linkId = product.productId || product.id;
+const HomePage: React.FC = () => {
+  const { products, navigate, settings, loading } = useAppStore(state => ({
+    products: state.products,
+    navigate: state.navigate,
+    settings: state.settings,
+    loading: state.loading
+  }));
+  const { categoryImages, categories, homepageNewArrivalsCount, homepageTrendingCount } = settings;
 
-    return (
-        <div 
-            className="bg-white rounded-lg border border-stone-200 overflow-hidden transition duration-500 ease-in-out shadow-lg hover:shadow-2xl hover:-translate-y-2 group cursor-pointer h-full flex flex-col"
-            onClick={() => navigate(`/product/${linkId}`)}
-        >
-            <div
-                className="relative w-full bg-stone-200 flex-shrink-0"
-                style={{ aspectRatio: '3/4' }}
-            >
-                {!isImageLoaded && <div className="absolute inset-0 bg-stone-200 animate-pulse"></div>}
-                <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                    // Optimized loading: Only use eager for top items (priority=true), else lazy
-                    loading={priority ? "eager" : "lazy"}
-                    // @ts-ignore
-                    fetchPriority={priority ? "high" : "auto"}
-                    decoding="async"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    onLoad={() => setIsImageLoaded(true)}
+  const getCategoryImage = (categoryName: string) => {
+    const category = categoryImages.find(c => c.categoryName === categoryName);
+    return category ? category.image : 'https://picsum.photos/seed/sazo-default-category/600/800';
+  };
+
+  // Helper to interleave fixed-position products with flow products
+  const getSortedProducts = (items: Product[], key: 'newArrivalDisplayOrder' | 'trendingDisplayOrder') => {
+      const PINNED_THRESHOLD = 1000;
+      const pinned: { product: Product, order: number }[] = [];
+      const flow: Product[] = [];
+
+      items.forEach(p => {
+          let val = p[key];
+          // Normalize 0, null, undefined to 1000
+          if (val === undefined || val === null || val === 0) val = PINNED_THRESHOLD;
+          const order = Number(val);
+          
+          if (order < PINNED_THRESHOLD) {
+              pinned.push({ product: p, order });
+          } else {
+              flow.push(p);
+          }
+      });
+
+      // Sort flow by ID Desc (Newest first)
+      flow.sort((a, b) => b.id.localeCompare(a.id));
+      
+      // Sort pinned by Order Asc
+      pinned.sort((a, b) => a.order - b.order);
+
+      const result: Product[] = [];
+      let flowIndex = 0;
+      const total = items.length;
+      let currentPos = 1;
+
+      // Fill slots 1..N
+      while(result.length < total) {
+          // If current position is claimed by a pinned item (or we passed it)
+          if (pinned.length > 0 && pinned[0].order <= currentPos) {
+              result.push(pinned.shift()!.product);
+          } 
+          // Otherwise fill with flow item
+          else if (flowIndex < flow.length) {
+              result.push(flow[flowIndex]);
+              flowIndex++;
+          } 
+          // If flow exhausted, dump remaining pinned
+          else if (pinned.length > 0) {
+               result.push(pinned.shift()!.product);
+          } else {
+              break; 
+          }
+          currentPos++;
+      }
+      return result;
+  };
+
+  const allNewArrivals = getSortedProducts(
+      products.filter(p => p.isNewArrival), 
+      'newArrivalDisplayOrder'
+  );
+    
+  const allTrendingProducts = getSortedProducts(
+      products.filter(p => p.isTrending),
+      'trendingDisplayOrder'
+  );
+  
+  const newArrivalsDisplay = allNewArrivals.slice(0, homepageNewArrivalsCount || 4);
+  const trendingProductsDisplay = allTrendingProducts.slice(0, homepageTrendingCount || 4);
+
+  return (
+    <>
+      <HeroSlider />
+
+      {/* Reduced px-4 to px-2 on mobile */}
+      <main className="max-w-[1440px] mx-auto px-2 sm:px-6 lg:px-8 pt-16 sm:pt-24">
+        <section className="mb-16 sm:mb-24">
+          <SectionTitle title="New Arrivals" />
+          {/* Reduced gap-4 to gap-2 on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+            {loading ? (
+               // Show 4 full-size skeletons during loading
+               [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
+            ) : (
+               // Priority is given to the first 2 items for faster mobile loading
+               newArrivalsDisplay.map((p, index) => (
+                 <ProductCard key={p.id} product={p} priority={index < 2} />
+               ))
+            )}
+          </div>
+          {!loading && allNewArrivals.length > (homepageNewArrivalsCount || 4) && (
+            <div className="text-center mt-8 sm:mt-12">
+              <button
+                onClick={() => navigate('/shop')}
+                className="border border-pink-600 text-pink-600 font-medium px-8 py-3 rounded-full hover:bg-pink-600 hover:text-white transition duration-300 transform hover:scale-105 active:scale-95 text-sm sm:text-base"
+              >
+                View All New Arrivals
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section className="mb-16 sm:mb-24">
+          <SectionTitle title="Trending Products" />
+          {/* Reduced gap-4 to gap-2 on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+            {loading ? (
+               // Show 4 full-size skeletons during loading
+               [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
+            ) : (
+               trendingProductsDisplay.map(p => <ProductCard key={p.id} product={p} />)
+            )}
+          </div>
+          {!loading && allTrendingProducts.length > (homepageTrendingCount || 4) && (
+            <div className="text-center mt-8 sm:mt-12">
+              <button
+                onClick={() => navigate('/shop')}
+                 className="border border-pink-600 text-pink-600 font-medium px-8 py-3 rounded-full hover:bg-pink-600 hover:text-white transition duration-300 transform hover:scale-105 active:scale-95 text-sm sm:text-base"
+              >
+                View All Trending Products
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section className="mb-16 sm:mb-24">
+          <SectionTitle title="Explore By Category" />
+          {/* Adjusted padding logic for wider cards: -mx-1 and p-1 */}
+          <div className="flex flex-wrap justify-center -mx-1 sm:-mx-3">
+            {categories.map(cat => (
+              <div key={cat} className="w-1/2 md:w-1/3 lg:w-1/4 p-1 sm:p-3">
+                <CategoryCard 
+                  categoryName={cat}
+                  imageUrl={getCategoryImage(cat)}
+                  onClick={() => navigate('/shop')}
                 />
-                <div className="absolute top-3 left-3 flex flex-col items-start space-y-1.5 z-10">
-                    {product.isNewArrival && (
-                        <span className="bg-pink-600 text-white text-[9px] font-bold px-2.5 py-1 rounded-full shadow tracking-wider uppercase">NEW</span>
-                    )}
-                    {product.isTrending && (
-                        <span className="bg-amber-400 text-stone-900 text-[9px] font-bold px-2.5 py-1 rounded-full shadow tracking-wider uppercase">BEST</span>
-                    )}
-                </div>
-            </div>
-            {/* Reduced internal padding on mobile (p-2) to allow more content width */}
-            <div className="p-2 sm:p-4 space-y-1.5 flex flex-col flex-1">
-                <h3 className="text-sm sm:text-lg font-medium text-stone-900 truncate" title={product.name}>{product.name}</h3>
-                <p className="text-xs text-pink-600 font-medium">Fabric: {product.fabric}</p>
-
-                <div className="pt-2 flex flex-col items-start mt-auto">
-                    <div className="flex items-center space-x-2 mb-3">
-                        {product.onSale ? (
-                            <>
-                                <span className="text-xs sm:text-sm text-stone-500 line-through">
-                                    ৳{regularPrice.toLocaleString('en-IN')}
-                                </span>
-                                <span className="text-base sm:text-xl font-bold text-stone-900">
-                                    ৳{product.price.toLocaleString('en-IN')}
-                                </span>
-                            </>
-                        ) : (
-                             <span className="text-base sm:text-xl font-bold text-stone-900">
-                                ৳{product.price.toLocaleString('en-IN')}
-                            </span>
-                        )}
-                    </div>
-                    
-                    <button
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            navigate(`/product/${linkId}`);
-                        }}
-                        className="w-full bg-pink-600 text-white rounded-full hover:bg-pink-700 transition duration-300 flex items-center justify-center space-x-2 active:scale-95 text-sm sm:text-base font-bold py-[0.4rem] sm:py-2"
-                    >
-                        <span>View Item</span>
-                        <ArrowRight className="w-4 h-4" /> 
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
+  );
 };
 
-export default memo(ProductCard);
+export default HomePage;
