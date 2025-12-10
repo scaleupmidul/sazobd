@@ -116,8 +116,8 @@ const HomePage: React.FC = () => {
       <main className="max-w-[1440px] mx-auto px-2 sm:px-6 lg:px-8 pt-16 sm:pt-24">
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="New Arrivals" />
-          {/* Reduced gap-4 to gap-2 on mobile */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+          {/* Specific gap-[0.7rem] (~11px) on mobile as requested */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[0.7rem] sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
@@ -142,8 +142,8 @@ const HomePage: React.FC = () => {
 
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="Trending Products" />
-          {/* Reduced gap-4 to gap-2 on mobile */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+          {/* Specific gap-[0.7rem] (~11px) on mobile as requested */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[0.7rem] sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
