@@ -474,16 +474,6 @@ const ProductDetailsPage: React.FC = () => {
                 <div className="space-y-2">
                     <Accordion title="Product Description" defaultOpen>
                         <p className="mb-4 text-stone-600 font-light">{product.description}</p>
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm mt-4 p-4 bg-stone-50 rounded-lg">
-                             <div className="flex flex-col">
-                                 <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider mb-1">Fabric</span>
-                                 <span className="font-semibold text-stone-800">{product.fabric}</span>
-                             </div>
-                             <div className="flex flex-col">
-                                 <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider mb-1">Fit</span>
-                                 <span className="font-semibold text-stone-800">Regular Fit</span>
-                             </div>
-                        </div>
                     </Accordion>
                     <Accordion title="Material & Care" icon={ShieldCheck}>
                         <div className="space-y-2">
