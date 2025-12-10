@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import ProductCard from '../components/ProductCard';
 import { Search, ChevronDown, SlidersHorizontal, X } from 'lucide-react';
@@ -164,55 +165,63 @@ const ShopPage: React.FC = () => {
   const showSkeletons = isInitialLoading && products.length === 0;
 
   return (
-    <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-      <div className="text-center mb-8 lg:mt-8 lg:mb-12">
+    <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 lg:pt-12 pb-24">
+      
+      {/* Desktop Header */}
+      <div className="hidden lg:block text-center mt-8 mb-12">
         <h2 className="text-3xl sm:text-4xl font-bold text-stone-800">SAZO Styles</h2>
+      </div>
+
+      {/* Mobile Sticky Professional Header & Action Bar */}
+      <div className="lg:hidden sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-stone-100 -mx-4 px-4 py-3 mb-6 flex justify-between items-center shadow-sm">
+          <div>
+              <h1 className="text-lg font-extrabold text-stone-900 leading-none tracking-tight">Shop All</h1>
+              <p className="text-[10px] text-stone-500 font-semibold mt-1 tracking-wide uppercase">{filteredProducts.length} Products Found</p>
+          </div>
+          <button 
+              onClick={() => setIsFilterOpen(true)}
+              className="flex items-center space-x-2 bg-stone-900 text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-md active:scale-95 transition hover:bg-stone-800"
+          >
+              <SlidersHorizontal className="w-3 h-3" />
+              <span>Filter</span>
+          </button>
       </div>
 
       <div className="lg:grid lg:grid-cols-4 lg:gap-10">
         <aside className="hidden lg:block lg:col-span-1">
           <FilterPanel />
         </aside>
-
-        <div className="lg:hidden mb-6 flex justify-end">
-            <button 
-                onClick={() => setIsFilterOpen(true)}
-                className="flex items-center space-x-2 bg-pink-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-pink-700 transition duration-300 shadow active:scale-95"
-            >
-                <SlidersHorizontal className="w-4 h-4" />
-                <span>Filters</span>
-            </button>
-        </div>
         
+        {/* Mobile Sidebar (Drawer) */}
         <div 
-          className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 lg:hidden ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 lg:hidden ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={() => setIsFilterOpen(false)}
         ></div>
         <div 
-          className={`fixed top-0 left-0 h-full w-full max-w-sm bg-[#FEF5F5] shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${isFilterOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${isFilterOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
-          <div className="flex justify-between items-center p-4 border-b bg-white">
-            <h3 className="font-bold text-pink-600">Filter Products</h3>
-            <button onClick={() => setIsFilterOpen(false)} className="p-2 rounded-full hover:bg-gray-100">
-              <X className="w-5 h-5 text-gray-600" />
+          <div className="flex justify-between items-center p-5 border-b border-stone-100 bg-stone-50/50">
+            <h3 className="text-lg font-bold text-stone-900">Filter Products</h3>
+            <button onClick={() => setIsFilterOpen(false)} className="p-2 rounded-full hover:bg-stone-200 text-stone-500 transition">
+              <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="p-4 overflow-y-auto h-full pb-24">
+          <div className="p-5 overflow-y-auto h-[calc(100vh-80px)] pb-24">
             <FilterPanel />
-            <div className="fixed bottom-0 left-0 w-full max-w-sm p-4 bg-white border-t">
+          </div>
+          <div className="absolute bottom-0 left-0 w-full p-4 bg-white border-t border-stone-100">
               <button 
                 onClick={() => setIsFilterOpen(false)} 
-                className="w-full bg-pink-600 text-white text-base font-bold py-3 rounded-full hover:bg-pink-700 transition duration-300 shadow active:scale-95"
+                className="w-full bg-stone-900 text-white text-sm font-bold uppercase tracking-wider py-3.5 rounded-xl hover:bg-stone-800 transition duration-300 shadow-lg active:scale-95"
               >
-                Show {filteredProducts.length} Results
+                View {filteredProducts.length} Products
               </button>
             </div>
-          </div>
         </div>
 
         <section className="lg:col-span-3">
           {showSkeletons ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
               {[...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)}
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -221,7 +230,7 @@ const ShopPage: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {currentProducts.map(p => (
                   <ProductCard key={p.id} product={p} />
                 ))}
