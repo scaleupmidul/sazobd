@@ -1,4 +1,3 @@
-
 import React, { useState, memo } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Product } from '../types';
@@ -49,17 +48,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
                 </div>
             </div>
             <div className="p-3 sm:p-4 space-y-1.5 flex flex-col flex-1">
-                {/* Fixed height container for Title to prevent misalignment */}
-                <div className="h-6 sm:h-7 flex items-center">
-                    <h3 className="text-sm sm:text-lg font-medium text-stone-900 truncate w-full" title={product.name}>{product.name}</h3>
-                </div>
-                
-                {/* Fixed height container for Fabric */}
-                <p className="text-xs text-pink-600 font-medium h-4 flex items-center truncate">Fabric: {product.fabric}</p>
+                <h3 className="text-sm sm:text-lg font-medium text-stone-900 truncate" title={product.name}>{product.name}</h3>
+                <p className="text-xs text-pink-600 font-medium">Fabric: {product.fabric}</p>
 
-                <div className="pt-2 flex flex-col items-start mt-auto w-full">
-                    {/* Fixed height container for Price to ensure alignment */}
-                    <div className="flex items-center space-x-2 mb-3 h-6 sm:h-7 w-full">
+                <div className="pt-2 flex flex-col items-start mt-auto">
+                    <div className="flex items-center space-x-2 mb-3">
                         {product.onSale ? (
                             <>
                                 <span className="text-xs sm:text-sm text-stone-500 line-through">
