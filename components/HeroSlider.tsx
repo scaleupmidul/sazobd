@@ -1,3 +1,4 @@
+
 // components/HeroSlider.tsx
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
@@ -5,7 +6,11 @@ import { useAppStore } from '../store';
 
 const HeroSlider: React.FC = () => {
     const navigate = useAppStore(state => state.navigate);
-    const sliderImages = useAppStore(state => state.settings.sliderImages);
+    // Combined selector to access multiple values from settings
+    const { sliderImages, showSliderText } = useAppStore(state => ({
+        sliderImages: state.settings.sliderImages,
+        showSliderText: state.settings.showSliderText ?? true
+    }));
     const loading = useAppStore(state => state.loading);
     
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -103,27 +108,29 @@ const HeroSlider: React.FC = () => {
                 })}
             </div>
             
-            <div className={`absolute inset-0 flex items-center justify-start p-6 sm:p-10 md:p-16 z-20 transition-opacity duration-700 ${currentSlide === 0 || isCurrentSlideImageLoaded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <div 
-                    key={currentSlide} 
-                    className={`max-w-md space-y-3 sm:space-y-4 text-white ${shouldAnimateText ? 'animate-fadeInUp' : ''}`}
-                >
-                    <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-shadow ${activeSlide.color}`}>
-                        {activeSlide.title}
-                    </h2>
-                    <p className="text-sm sm:text-base text-gray-100 font-medium text-shadow">
-                        {activeSlide.subtitle}
-                    </p>
-                    <div>
-                      <button
-                          onClick={() => navigate('/shop')}
-                          className="mt-4 bg-pink-600 text-white text-sm sm:text-base font-bold px-6 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-pink-700 transition duration-300 shadow-lg transform hover:scale-105 active:scale-95"
-                      >
-                          Shop Now
-                      </button>
+            {showSliderText && (
+                <div className={`absolute inset-0 flex items-center justify-start p-6 sm:p-10 md:p-16 z-20 transition-opacity duration-700 ${currentSlide === 0 || isCurrentSlideImageLoaded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <div 
+                        key={currentSlide} 
+                        className={`max-w-md space-y-3 sm:space-y-4 text-white ${shouldAnimateText ? 'animate-fadeInUp' : ''}`}
+                    >
+                        <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-shadow ${activeSlide.color}`}>
+                            {activeSlide.title}
+                        </h2>
+                        <p className="text-sm sm:text-base text-gray-100 font-medium text-shadow">
+                            {activeSlide.subtitle}
+                        </p>
+                        <div>
+                        <button
+                            onClick={() => navigate('/shop')}
+                            className="mt-4 bg-pink-600 text-white text-sm sm:text-base font-bold px-6 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-pink-700 transition duration-300 shadow-lg transform hover:scale-105 active:scale-95"
+                        >
+                            Shop Now
+                        </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
             
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
                 {slides.map((_, index) => (
