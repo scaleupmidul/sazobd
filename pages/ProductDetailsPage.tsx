@@ -68,6 +68,7 @@ const ProductDetailsPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isPaused, setIsPaused] = useState(false); // State to pause auto-slide on interaction
 
   // Swipe state for mobile
   const [touchStart, setTouchStart] = useState(0);
@@ -116,6 +117,17 @@ const ProductDetailsPage: React.FC = () => {
     }
   }, [product, isFreeSizeOnly]);
 
+  // Auto Slide Effect
+  useEffect(() => {
+    if (images.length <= 1 || isPaused) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex(prev => (prev + 1) % images.length);
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [images.length, currentImageIndex, isPaused]);
+
   const handleNextImage = useCallback(() => {
     if (images.length > 0) setCurrentImageIndex((prev) => (prev + 1) % images.length);
   }, [images.length]);
@@ -127,11 +139,13 @@ const ProductDetailsPage: React.FC = () => {
   // Swipe handlers
   const minSwipeDistance = 50;
   const onTouchStart = (e: React.TouchEvent) => {
+    setIsPaused(true); // Pause on touch
     setTouchEnd(0);
     setTouchStart(e.targetTouches[0].clientX);
   }
   const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
   const onTouchEnd = () => {
+    setIsPaused(false); // Resume on touch end
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
@@ -261,7 +275,11 @@ const ProductDetailsPage: React.FC = () => {
                 {/* CHANGED: Added max-w-[550px] and mx-auto to constrain size */}
                 <div className="hidden lg:flex flex-col gap-5 max-w-[550px] lg:ml-auto lg:mr-4">
                     {/* Main Image Stage */}
-                    <div className="relative w-full aspect-[3/4] bg-stone-100 rounded-lg overflow-hidden group shadow-sm border border-stone-100">
+                    <div 
+                        className="relative w-full aspect-[3/4] bg-stone-100 rounded-lg overflow-hidden group shadow-sm border border-stone-100"
+                        onMouseEnter={() => setIsPaused(true)} // Pause on hover for desktop
+                        onMouseLeave={() => setIsPaused(false)}
+                    >
                         {images.length > 0 ? (
                             <>
                                 <img
