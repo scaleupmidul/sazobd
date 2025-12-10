@@ -1,4 +1,5 @@
 
+
 // Data copied from frontend constants.ts
 export const MOCK_PRODUCTS_DATA = [
   { id: 101, name: "Gulmohar Lawn Suit", category: "Cotton", price: 3500, description: "Pure cotton lawn three-piece with exquisite embroidery and soft dupatta. Ideal for daily wear.", fabric: "Lawn Cotton", colors: ["Pastel Pink", "Beige", "Mint"], sizes: ["S", "M", "L", "XL", "Free"], isNewArrival: true, isTrending: false, onSale: false, images: ["https://picsum.photos/seed/gulmohar/400/500", "https://picsum.photos/seed/gulmohar2/400/500", "https://picsum.photos/seed/gulmohar3/400/500"] },
@@ -85,4 +86,7 @@ If you have questions or comments about this Privacy Policy, please contact us a
   adminEmail: 'admin@sazo.com',
   adminPassword: 'password123',
   footerDescription: 'Discover elegance and style with SAZO. We bring you the finest collections of women\'s wear, crafted with passion and precision for the modern woman.',
+  homepageNewArrivalsCount: 4,
+  homepageTrendingCount: 4,
+  showSliderText: true,
 };
