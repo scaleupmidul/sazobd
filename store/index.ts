@@ -1,4 +1,5 @@
 
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AppState, Product, CartItem, Order, OrderStatus, ContactMessage, AppSettings, AdminProductsResponse } from '../types';
@@ -22,7 +23,8 @@ const DEFAULT_SETTINGS: AppSettings = {
     contactAddress: '', contactPhone: '', contactEmail: '', whatsappNumber: '', showWhatsAppButton: false,
     showCityField: true,
     socialMediaLinks: [], privacyPolicy: '', adminEmail: '', adminPassword: '', footerDescription: '',
-    homepageNewArrivalsCount: 4, homepageTrendingCount: 4
+    homepageNewArrivalsCount: 4, homepageTrendingCount: 4,
+    showSliderText: true
 };
 
 // Cleared Mock Data to prevent confusion with real DB data
