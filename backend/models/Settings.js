@@ -1,57 +1,213 @@
-import mongoose from 'mongoose';
 
-const SliderImageSchema = new mongoose.Schema({
-  id: Number,
-  title: String,
-  subtitle: String,
-  color: String,
-  image: String,
-  mobileImage: String,
-}, { _id: false });
+// FIX: Import Dispatch and SetStateAction types from React to resolve namespace errors.
+import type { Dispatch, SetStateAction } from 'react';
 
-const CategoryImageSchema = new mongoose.Schema({
-  categoryName: String,
-  image: String,
-}, { _id: false });
+export interface Product {
+  id: string;
+  productId?: string; // Added numeric ID for analytics (e.g., "987323")
+  name: string;
+  category: string;
+  price: number;
+  regularPrice?: number; // Added: The original price before discount
+  description: string;
+  fabric: string;
+  colors: string[];
+  sizes: string[];
+  isNewArrival: boolean;
+  newArrivalDisplayOrder?: number; // Separate order for New Arrivals
+  isTrending: boolean;
+  trendingDisplayOrder?: number; // Separate order for Trending
+  onSale: boolean;
+  images: string[];
+  displayOrder: number; // Keep for backward compatibility or generic sort
+}
 
-const ShippingOptionSchema = new mongoose.Schema({
-  id: String,
-  label: String,
-  charge: Number,
-}, { _id: false });
+export interface CartItem {
+  id: string;
+  productId?: string; // Store numeric ID in cart for consistent tracking
+  name:string;
+  price: number;
+  quantity: number;
+  image: string;
+  size: string;
+}
 
-const SocialMediaLinkSchema = new mongoose.Schema({
-  platform: String,
-  url: String,
-}, { _id: false });
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
 
-const SettingsSchema = new mongoose.Schema({
-  onlinePaymentInfo: String,
-  onlinePaymentInfoStyles: {
-    fontSize: String,
-  },
-  codEnabled: Boolean,
-  onlinePaymentEnabled: Boolean,
-  onlinePaymentMethods: [String],
-  sliderImages: [SliderImageSchema],
-  categoryImages: [CategoryImageSchema],
-  categories: [String],
-  shippingOptions: [ShippingOptionSchema],
-  productPagePromoImage: String,
-  contactAddress: String,
-  contactPhone: String,
-  contactEmail: String,
-  whatsappNumber: String,
-  showWhatsAppButton: Boolean,
-  showCityField: Boolean,
-  socialMediaLinks: [SocialMediaLinkSchema],
-  privacyPolicy: String,
-  adminEmail: { type: String, required: true, unique: true },
-  adminPassword: { type: String, required: true },
-  footerDescription: String,
-  homepageNewArrivalsCount: { type: Number, default: 4 },
-  homepageTrendingCount: { type: Number, default: 4 },
-});
+export interface Order {
+  id: string;
+  orderId: string; // Added numeric short ID
+  customerName: string;
+  phone: string;
+  address: string;
+  city: string;
+  cartItems: CartItem[];
+  total: number;
+  shippingCharge?: number; // Explicitly store the shipping charge
+  status: OrderStatus;
+  date: string;
+  createdAt?: string; // Added for tracking new orders
+  paymentMethod: 'COD' | 'Online';
+  paymentDetails?: {
+    paymentNumber: string;
+    method: string;
+    amount: number;
+    transactionId: string;
+  };
+}
 
-const Settings = mongoose.model('Settings', SettingsSchema);
-export default Settings;
+export interface SliderImage {
+  id: number;
+  title: string;
+  subtitle: string;
+  color: string;
+  image: string;
+}
+
+export interface Notification {
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  date: string;
+  isRead: boolean;
+}
+
+export interface SliderImageSetting {
+  id: number;
+  title: string;
+  subtitle: string;
+  color: string;
+  image: string;
+  mobileImage?: string;
+}
+
+export interface CategoryImageSetting {
+  categoryName: string;
+  image: string;
+}
+
+export interface ShippingOption {
+  id: string;
+  label: string;
+  charge: number;
+}
+
+export interface SocialMediaLink {
+  platform: string;
+  url: string;
+}
+
+export interface AppSettings {
+  onlinePaymentInfo: string;
+  onlinePaymentInfoStyles?: {
+    fontSize: string;
+  };
+  codEnabled: boolean;
+  onlinePaymentEnabled: boolean;
+  onlinePaymentMethods: string[];
+  sliderImages: SliderImageSetting[];
+  categoryImages: CategoryImageSetting[];
+  categories: string[];
+  shippingOptions: ShippingOption[];
+  productPagePromoImage: string;
+  contactAddress: string;
+  contactPhone: string;
+  contactEmail: string;
+  whatsappNumber: string;
+  showWhatsAppButton: boolean;
+  showCityField: boolean;
+  socialMediaLinks: SocialMediaLink[];
+  privacyPolicy: string;
+  adminEmail: string;
+  adminPassword: string;
+  footerDescription: string;
+  homepageNewArrivalsCount: number;
+  homepageTrendingCount: number;
+  showSliderText: boolean; // Toggle for text/button on hero slider
+}
+
+export interface AdminProductsPagination {
+  page: number;
+  pages: number;
+  total: number;
+}
+
+export interface AdminProductsResponse {
+  products: Product[];
+  page: number;
+  pages: number;
+  total: number;
+}
+
+export interface DashboardStats {
+    totalOrders: number;
+    onlineTransactions: number;
+    totalRevenue: number;
+    totalProducts: number;
+}
+
+export interface AppState {
+  path: string;
+  navigate: (path: string) => void;
+  products: Product[];
+  setProducts: (products: Product[]) => void;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  updateProduct: (product: Product) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  cart: CartItem[];
+  addToCart: (product: Product, quantity: number, size: string) => void;
+  updateCartQuantity: (id: string, size: string, newQuantity: number) => void;
+  clearCart: () => void;
+  _updateCartTotal: () => void;
+  cartTotal: number;
+  selectedProduct: Product | null;
+  setSelectedProduct: (product: Product | null) => void;
+  refreshProduct: (id: string) => Promise<void>; // Added: Fetch fresh product data
+  notification: Notification | null;
+  notify: (message: string, type?: 'success' | 'error' | 'info') => void;
+  orders: Order[];
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  addOrder: (
+    customerDetails: { name: string; phone: string; address: string; city: string; }, 
+    cartItems: CartItem[], 
+    total: number,
+    paymentInfo: {
+        paymentMethod: 'COD' | 'Online';
+        paymentDetails?: {
+            paymentNumber: string;
+            method: string;
+            amount: number;
+            transactionId: string;
+        }
+    },
+    shippingCharge: number // Added shippingCharge parameter
+  ) => Promise<Order>;
+  deleteOrder: (orderId: string) => Promise<void>;
+  isAdminAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  contactMessages: ContactMessage[];
+  addContactMessage: (messageData: Omit<ContactMessage, 'id' | 'date' | 'isRead'>) => Promise<void>;
+  markMessageAsRead: (messageId: string, isRead: boolean) => Promise<void>;
+  deleteContactMessage: (messageId: string) => Promise<void>;
+  loading: boolean;
+  settings: AppSettings;
+  updateSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
+  loadInitialData: () => Promise<void>;
+  loadAdminData: () => Promise<void>; // New separated action
+  fullProductsLoaded: boolean;
+  ensureAllProductsLoaded: () => Promise<void>;
+  adminProducts: Product[];
+  adminProductsPagination: AdminProductsPagination;
+  loadAdminProducts: (page: number, searchTerm: string) => Promise<void>;
+  dashboardStats: DashboardStats | null;
+  refreshOrders: () => Promise<void>;
+  newOrdersCount: number;
+  markOrdersAsSeen: () => void;
+}
