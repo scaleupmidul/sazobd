@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import ProductCard from '../components/ProductCard';
 import { Search, ChevronDown, SlidersHorizontal, X } from 'lucide-react';
@@ -7,15 +8,15 @@ const PRODUCTS_PER_PAGE = 12;
 
 // Robust, full-width skeleton to match the real card dimensions precisely
 const ProductCardSkeleton: React.FC = () => (
-  <div className="bg-white rounded-lg border border-stone-200 overflow-hidden shadow-lg w-full">
-    <div className="aspect-[3.5/4] bg-stone-200 w-full animate-pulse" />
-    <div className="p-3 sm:p-4 space-y-1.5">
+  <div className="bg-white rounded-lg border border-stone-200 overflow-hidden shadow-lg w-full h-full flex flex-col">
+    <div className="aspect-[3/4] bg-stone-200 w-full animate-pulse" />
+    <div className="p-3 sm:p-4 space-y-1.5 flex flex-col flex-1">
       {/* Title Bar - Matches text-sm sm:text-lg */}
       <div className="h-5 sm:h-7 bg-stone-200 rounded w-full animate-pulse" />
       {/* Fabric Bar - Matches text-xs */}
       <div className="h-4 bg-stone-200 rounded w-2/3 animate-pulse" />
       
-      <div className="pt-2 flex flex-col items-start w-full">
+      <div className="pt-2 flex flex-col items-start w-full mt-auto">
         {/* Price Container - Matches mb-3 and font sizes */}
         <div className="flex items-center space-x-2 mb-3 w-full">
            <div className="h-6 sm:h-7 bg-stone-200 rounded w-1/3 animate-pulse" />
@@ -164,7 +165,8 @@ const ShopPage: React.FC = () => {
   const showSkeletons = isInitialLoading && products.length === 0;
 
   return (
-    <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+    // Reduced padding (px-2) on mobile for wider cards
+    <main className="max-w-screen-2xl mx-auto px-2 sm:px-6 lg:px-8 pt-8 sm:pt-12">
       <div className="text-center mb-8 lg:mt-8 lg:mb-12">
         <h2 className="text-3xl sm:text-4xl font-bold text-stone-800">SAZO Styles</h2>
       </div>
@@ -212,7 +214,8 @@ const ShopPage: React.FC = () => {
 
         <section className="lg:col-span-3">
           {showSkeletons ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            // Reduced gap (gap-2) on mobile for wider cards
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
               {[...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)}
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -221,7 +224,8 @@ const ShopPage: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              {/* Reduced gap (gap-2) on mobile for wider cards */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                 {currentProducts.map(p => (
                   <ProductCard key={p.id} product={p} />
                 ))}
