@@ -172,20 +172,23 @@ const ShopPage: React.FC = () => {
         <h2 className="text-3xl sm:text-4xl font-bold text-stone-800">SAZO Styles</h2>
       </div>
 
-      {/* Mobile Sticky Professional Header & Action Bar */}
-      {/* Reduced negative margin (-mx-2) to match container px-2 */}
-      <div className="lg:hidden sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-stone-100 -mx-2 px-3 py-3 mb-4 flex justify-between items-center shadow-sm">
-          <div>
-              <h1 className="text-lg font-extrabold text-stone-900 leading-none tracking-tight">Shop All</h1>
-              <p className="text-[10px] text-stone-500 font-semibold mt-1 tracking-wide uppercase">{filteredProducts.length} Products Found</p>
-          </div>
-          <button 
-              onClick={() => setIsFilterOpen(true)}
-              className="flex items-center space-x-2 bg-stone-900 text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-md active:scale-95 transition hover:bg-stone-800"
-          >
-              <SlidersHorizontal className="w-3 h-3" />
-              <span>Filter</span>
-          </button>
+      {/* Mobile Sticky Professional Header (SAZO Styles centered) */}
+      <div className="lg:hidden sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-stone-100 -mx-2 py-3 mb-4 shadow-sm flex items-center justify-center">
+          <h1 className="text-xl font-bold text-stone-900 tracking-tight">SAZO Styles</h1>
+      </div>
+
+      {/* Mobile Filter & Count Bar (Body) */}
+      <div className="lg:hidden flex justify-between items-center mb-6 px-1">
+           <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+              {filteredProducts.length} Products
+           </span>
+           <button 
+                onClick={() => setIsFilterOpen(true)}
+                className="flex items-center space-x-2 text-stone-800 font-semibold text-sm hover:text-pink-600 transition bg-stone-50 px-4 py-2 rounded-full border border-stone-200 active:scale-95"
+            >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span>Filter</span>
+            </button>
       </div>
 
       <div className="lg:grid lg:grid-cols-4 lg:gap-10">
