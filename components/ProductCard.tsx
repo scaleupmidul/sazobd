@@ -1,3 +1,4 @@
+
 import React, { useState, memo } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Product } from '../types';
@@ -10,7 +11,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) => {
     const [isImageLoaded, setIsImageLoaded] = useState(false);
-    const originalPrice = product.price + 200;
+    const regularPrice = product.regularPrice || product.price + 200; // Fallback only if not set in DB yet
     const navigate = useAppStore(state => state.navigate);
 
     // Use productId (numeric) for the URL if available, fallback to id
@@ -56,7 +57,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
                         {product.onSale ? (
                             <>
                                 <span className="text-xs sm:text-sm text-stone-500 line-through">
-                                    ৳{originalPrice.toLocaleString('en-IN')}
+                                    ৳{regularPrice.toLocaleString('en-IN')}
                                 </span>
                                 <span className="text-base sm:text-xl font-bold text-stone-900">
                                     ৳{product.price.toLocaleString('en-IN')}
