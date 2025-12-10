@@ -1,3 +1,4 @@
+
 import express from 'express';
 import Product from '../models/Product.js';
 import { protect } from '../middleware/authMiddleware.js';
@@ -57,32 +58,30 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     let product;
-    // Check if the param looks like a 6-digit numeric ID (our productId format)
-    if (/^\d{6}$/.test(req.params.id)) {
-        product = await Product.findOne({ productId: req.params.id });
-    }
     
-    // If not found by productId (or format didn't match), try standard MongoDB ID
-    if (!product) {
-        // Validate if it's a valid ObjectId to prevent cast errors
-        if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-            product = await Product.findById(req.params.id);
-            
-            // LAZY MIGRATION: If we found an old product without a productId, 
-            // generate one now and save it.
-            if (product && !product.productId) {
-                // Generate random 6 digit number
-                let uniqueId = Math.floor(100000 + Math.random() * 900000).toString();
-                // Ensure uniqueness check (simple loop)
-                let exists = await Product.findOne({ productId: uniqueId });
-                while(exists) {
-                    uniqueId = Math.floor(100000 + Math.random() * 900000).toString();
-                    exists = await Product.findOne({ productId: uniqueId });
-                }
-                
-                product.productId = uniqueId;
-                await product.save();
+    // Priority 1: Search by productId (numeric string)
+    // Relaxed check: Accept any non-empty string that isn't a 24-char ObjectId
+    // This supports both the 6-digit generated IDs AND the 3-digit seed IDs (e.g. "109")
+    product = await Product.findOne({ productId: req.params.id });
+    
+    // Priority 2: If not found, and it looks like a valid Mongo ObjectId, search by _id
+    if (!product && req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+        product = await Product.findById(req.params.id);
+        
+        // LAZY MIGRATION: If we found an old product without a productId, 
+        // generate one now and save it.
+        if (product && !product.productId) {
+            // Generate random 6 digit number
+            let uniqueId = Math.floor(100000 + Math.random() * 900000).toString();
+            // Ensure uniqueness check (simple loop)
+            let exists = await Product.findOne({ productId: uniqueId });
+            while(exists) {
+                uniqueId = Math.floor(100000 + Math.random() * 900000).toString();
+                exists = await Product.findOne({ productId: uniqueId });
             }
+            
+            product.productId = uniqueId;
+            await product.save();
         }
     }
 
