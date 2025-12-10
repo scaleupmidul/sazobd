@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '../types';
-import { ShoppingCart, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X, Star, CreditCard, RefreshCw } from 'lucide-react';
 import { useAppStore } from '../store';
 
 // --- Reusable Components ---
@@ -9,19 +9,19 @@ import { useAppStore } from '../store';
 const Accordion: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean; icon?: React.ElementType }> = ({ title, children, defaultOpen = false, icon: Icon }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="border-t border-stone-200">
+    <div className="border-b border-stone-100 last:border-0">
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className="w-full py-5 flex justify-between items-center text-left hover:bg-stone-50 transition px-2 -mx-2 group"
+        className="w-full py-4 flex justify-between items-center text-left hover:bg-stone-50/50 transition px-2 -mx-2 group rounded-lg"
       >
         <div className="flex items-center gap-3">
-            {Icon && <Icon className="w-5 h-5 text-stone-400 group-hover:text-stone-800 transition-colors" />}
-            <span className="font-semibold text-stone-900 text-sm tracking-wide uppercase">{title}</span>
+            {Icon && <Icon className="w-5 h-5 text-pink-500" />}
+            <span className="font-semibold text-stone-800 text-sm tracking-wide">{title}</span>
         </div>
         <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-        <div className="text-stone-600 text-sm leading-7 px-1">
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'}`}>
+        <div className="text-stone-600 text-sm leading-relaxed px-2">
           {children}
         </div>
       </div>
@@ -29,22 +29,35 @@ const Accordion: React.FC<{ title: string; children: React.ReactNode; defaultOpe
   );
 };
 
+// --- Trust Badge Component ---
+const TrustBadge: React.FC<{ icon: React.ElementType, title: string, sub: string }> = ({ icon: Icon, title, sub }) => (
+    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl border border-stone-100">
+        <div className="p-2 bg-white rounded-full shadow-sm text-pink-600">
+            <Icon className="w-5 h-5" />
+        </div>
+        <div>
+            <p className="text-xs font-bold text-stone-800 uppercase tracking-wide">{title}</p>
+            <p className="text-[10px] text-stone-500">{sub}</p>
+        </div>
+    </div>
+);
+
 // --- Skeleton Loader ---
 const ProductDetailsPageSkeleton: React.FC = () => (
-  <main className="max-w-[1600px] mx-auto px-0 lg:px-8 pt-0 lg:pt-8 animate-pulse">
-    <div className="lg:grid lg:grid-cols-2 lg:gap-12">
-      <div className="w-full max-w-[550px] mx-auto">
-        <div className="aspect-[3/4] bg-stone-200 w-full rounded-lg"></div>
-        <div className="flex gap-4 mt-4">
-             <div className="w-20 h-24 bg-stone-200 rounded"></div>
-             <div className="w-20 h-24 bg-stone-200 rounded"></div>
-             <div className="w-20 h-24 bg-stone-200 rounded"></div>
+  <main className="max-w-[1280px] mx-auto px-4 lg:px-8 pt-6 lg:pt-12 animate-pulse">
+    <div className="lg:grid lg:grid-cols-2 lg:gap-16">
+      <div className="w-full">
+        <div className="aspect-[3/4] bg-stone-200 w-full rounded-2xl mb-4"></div>
+        <div className="hidden lg:flex gap-4">
+             <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
+             <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
+             <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
         </div>
       </div>
-      <div className="px-4 lg:px-0 mt-8 lg:mt-0 space-y-8 max-w-xl">
+      <div className="mt-8 lg:mt-0 space-y-6">
         <div className="h-8 bg-stone-200 rounded w-3/4"></div>
         <div className="h-6 bg-stone-200 rounded w-1/4"></div>
-        <div className="space-y-2 pt-8">
+        <div className="space-y-3 pt-6">
             <div className="h-12 bg-stone-200 rounded w-full"></div>
             <div className="h-12 bg-stone-200 rounded w-full"></div>
         </div>
@@ -68,25 +81,19 @@ const ProductDetailsPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [isPaused, setIsPaused] = useState(false); // State to pause auto-slide on interaction
-  
-  // New state to track explicit data fetching for this page
+  const [isPaused, setIsPaused] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
 
-  // Swipe state for mobile
+  // Swipe state
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // Initial Data Fetch
   useEffect(() => {
     const fetchProductData = async () => {
         const pathParts = window.location.pathname.split('/');
         const pathId = pathParts[pathParts.length - 1];
         
         if (pathId && pathId !== 'product') {
-             // If we already have the product in state (e.g. from nav), we might still want to refresh,
-             // but we can stop the loading spinner immediately if needed. 
-             // Ideally, we await the refresh to ensure we have the latest data before deciding "Not Found".
              await refreshProduct(pathId);
         }
         setIsFetching(false);
@@ -95,7 +102,6 @@ const ProductDetailsPage: React.FC = () => {
     fetchProductData();
   }, [refreshProduct]);
 
-  // Derived Data
   const images = useMemo(() => {
     if (!product || !product.images) return [];
     return product.images.filter(img => img && img !== "");
@@ -104,14 +110,12 @@ const ProductDetailsPage: React.FC = () => {
   const sizes = product?.sizes || [];
   const isFreeSizeOnly = sizes.length === 1 && sizes[0] === 'Free';
 
-  // Initialize Defaults
   useEffect(() => {
     if (product) {
         setCurrentImageIndex(0);
         setSelectedSize(isFreeSizeOnly ? 'Free' : null);
         window.scrollTo(0, 0); 
         
-        // Analytics
         const itemIdForAnalytics = product.productId || product.id;
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
@@ -129,13 +133,11 @@ const ProductDetailsPage: React.FC = () => {
     }
   }, [product, isFreeSizeOnly]);
 
-  // Auto Slide Effect
   useEffect(() => {
     if (images.length <= 1 || isPaused) return;
-
     const interval = setInterval(() => {
       setCurrentImageIndex(prev => (prev + 1) % images.length);
-    }, 3000); // Change image every 3 seconds
+    }, 4000); 
 
     return () => clearInterval(interval);
   }, [images.length, currentImageIndex, isPaused]);
@@ -148,16 +150,15 @@ const ProductDetailsPage: React.FC = () => {
     if (images.length > 0) setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   }, [images.length]);
 
-  // Swipe handlers
   const minSwipeDistance = 50;
   const onTouchStart = (e: React.TouchEvent) => {
-    setIsPaused(true); // Pause on touch
+    setIsPaused(true);
     setTouchEnd(0);
     setTouchStart(e.targetTouches[0].clientX);
   }
   const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
   const onTouchEnd = () => {
-    setIsPaused(false); // Resume on touch end
+    setIsPaused(false);
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
@@ -207,55 +208,55 @@ const ProductDetailsPage: React.FC = () => {
       }
   };
 
-  // Improved Loading Condition:
-  // Shows skeleton if global loading is true OR if we are explicitly fetching data for this page.
-  // This prevents the "Not Found" flash.
   if ((loading || isFetching) && !product) return <ProductDetailsPageSkeleton />;
   
   if (!product) {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
-        <p className="text-stone-500 text-lg">Product not found.</p>
-        <button onClick={() => navigate('/shop')} className="text-pink-600 font-medium hover:underline">Continue Shopping</button>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-6">
+        <div className="p-6 bg-stone-50 rounded-full">
+            <ShoppingBag className="w-12 h-12 text-stone-300"/>
+        </div>
+        <p className="text-stone-600 text-xl font-medium">Product not found.</p>
+        <button onClick={() => navigate('/shop')} className="bg-pink-600 text-white px-8 py-3 rounded-full font-bold hover:bg-pink-700 transition shadow-lg active:scale-95">
+            Continue Shopping
+        </button>
       </div>
     );
   }
 
-  // Calculate prices based on optional regularPrice
   const regularPrice = product.regularPrice || 0;
   const hasDiscount = regularPrice > product.price;
 
   return (
-    <div className="bg-white min-h-screen pb-24 lg:pb-0 relative"> 
+    <div className="bg-white min-h-screen pb-28 lg:pb-12 relative"> 
       
-      {/* --- Mobile Top Bar (Transparent/Blur) --- */}
-      <div className="fixed top-0 left-0 right-0 z-30 lg:hidden flex items-center justify-between p-4 bg-gradient-to-b from-black/20 to-transparent pointer-events-none">
-        <button onClick={() => navigate('/shop')} className="p-2 -ml-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-stone-900 pointer-events-auto">
+      {/* --- Mobile Top Bar --- */}
+      <div className="fixed top-0 left-0 right-0 z-30 lg:hidden flex items-center justify-between p-4 pointer-events-none">
+        <button onClick={() => navigate('/shop')} className="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-sm text-stone-800 pointer-events-auto active:scale-90 transition">
              <ChevronLeft className="w-6 h-6" />
         </button>
-        <button onClick={handleShare} className="p-2 -mr-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-stone-900 pointer-events-auto">
+        <button onClick={handleShare} className="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-sm text-stone-800 pointer-events-auto active:scale-90 transition">
             <Share2 className="w-5 h-5" />
         </button>
       </div>
 
-      <main className="max-w-[1600px] mx-auto lg:px-8 lg:pt-8">
+      <main className="max-w-[1280px] mx-auto lg:px-8 lg:pt-8">
         
         {/* --- Breadcrumb (Desktop) --- */}
-        <nav className="hidden lg:flex items-center space-x-2 text-xs font-medium text-stone-500 mb-6 uppercase tracking-wider">
+        <nav className="hidden lg:flex items-center space-x-2 text-xs font-medium text-stone-500 mb-8 uppercase tracking-wider">
             <span onClick={() => navigate('/')} className="cursor-pointer hover:text-pink-600 transition">Home</span>
-            <span className="text-stone-300">/</span>
+            <ChevronRight className="w-3 h-3 text-stone-300"/>
             <span onClick={() => navigate('/shop')} className="cursor-pointer hover:text-pink-600 transition">Shop</span>
-            <span className="text-stone-300">/</span>
-            <span className="text-stone-900">{product.name}</span>
+            <ChevronRight className="w-3 h-3 text-stone-300"/>
+            <span className="text-stone-900 line-clamp-1 max-w-[200px]">{product.name}</span>
         </nav>
 
-        {/* CHANGED: Grid layout adjusted to 2 columns with reduced gap for a more compact look */}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-12 xl:gap-16 items-start justify-center">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
             
-            {/* --- LEFT COLUMN: IMAGES (Slider with Thumbnails) --- */}
-            <div className="w-full">
+            {/* --- LEFT COLUMN: IMAGES --- */}
+            <div className="w-full select-none">
                 
-                {/* Mobile: Full Screen Swipeable Slider (Keep existing) */}
+                {/* Mobile Slider */}
                 <div 
                     className="lg:hidden relative bg-stone-100 w-full aspect-[3/4] overflow-hidden group touch-pan-y"
                     onTouchStart={onTouchStart}
@@ -263,38 +264,34 @@ const ProductDetailsPage: React.FC = () => {
                     onTouchEnd={onTouchEnd}
                 >
                     {images.length > 0 ? (
-                        <img 
-                            src={images[currentImageIndex]} 
-                            alt={product.name} 
-                            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
-                        />
+                        <>
+                            <img 
+                                src={images[currentImageIndex]} 
+                                alt={product.name} 
+                                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
+                            />
+                             {/* Image Counter Badge for Mobile */}
+                            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full">
+                                {currentImageIndex + 1} / {images.length}
+                            </div>
+                        </>
                     ) : (
                         <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
                     )}
                     
-                    {/* Status Tags (Mobile) - UPDATED COLORS & REMOVED ROUNDED */}
-                    <div className="absolute bottom-4 left-4 flex gap-2">
-                         {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">NEW</span>}
-                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
+                    {/* Tags */}
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                         {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">New</span>}
+                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">Hot</span>}
+                         {hasDiscount && <span className="bg-green-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">Sale</span>}
                     </div>
-
-                    {/* Dots Indicator */}
-                    {images.length > 1 && (
-                         <div className="absolute bottom-4 right-4 flex space-x-1.5">
-                            {images.map((_, idx) => (
-                                <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50'}`} />
-                            ))}
-                        </div>
-                    )}
                 </div>
 
-                {/* Desktop: Enhanced Slider with Thumbnails */}
-                {/* CHANGED: Added max-w-[550px] and mx-auto to constrain size */}
-                <div className="hidden lg:flex flex-col gap-5 max-w-[550px] lg:ml-auto lg:mr-4">
-                    {/* Main Image Stage */}
+                {/* Desktop Gallery */}
+                <div className="hidden lg:flex flex-col gap-4">
                     <div 
-                        className="relative w-full aspect-[3/4] bg-stone-100 rounded-lg overflow-hidden group shadow-sm border border-stone-100"
-                        onMouseEnter={() => setIsPaused(true)} // Pause on hover for desktop
+                        className="relative w-full aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden group shadow-sm border border-stone-100 cursor-zoom-in"
+                        onMouseEnter={() => setIsPaused(true)}
                         onMouseLeave={() => setIsPaused(false)}
                     >
                         {images.length > 0 ? (
@@ -302,51 +299,41 @@ const ProductDetailsPage: React.FC = () => {
                                 <img
                                     src={images[currentImageIndex]}
                                     alt={product.name}
-                                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110 cursor-zoom-in"
+                                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                                 />
-                                
-                                {/* Navigation Arrows */}
                                 {images.length > 1 && (
                                     <>
                                         <button 
                                             onClick={handlePrevImage}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"
-                                            aria-label="Previous image"
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110 hover:-translate-x-1"
                                         >
-                                            <ChevronLeft className="w-6 h-6" />
+                                            <ChevronLeft className="w-5 h-5" />
                                         </button>
                                         <button 
                                             onClick={handleNextImage}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"
-                                            aria-label="Next image"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110 hover:translate-x-1"
                                         >
-                                            <ChevronRight className="w-6 h-6" />
+                                            <ChevronRight className="w-5 h-5" />
                                         </button>
                                     </>
                                 )}
-
-                                {/* Badges (Desktop) - UPDATED COLORS & REMOVED ROUNDED */}
-                                <div className="absolute top-6 left-6 flex flex-col gap-2 pointer-events-none">
-                                    {product.isNewArrival && <span className="bg-pink-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">NEW</span>}
-                                    {product.isTrending && <span className="bg-amber-400 text-stone-900 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
-                                </div>
                             </>
                         ) : (
-                            <div className="flex items-center justify-center h-full text-stone-400">No Image Available</div>
+                            <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
                         )}
                     </div>
 
-                    {/* Thumbnails */}
+                    {/* Desktop Thumbnails */}
                     {images.length > 1 && (
-                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="flex gap-4 overflow-x-auto py-2 scrollbar-hide">
                             {images.map((img, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentImageIndex(idx)}
-                                    className={`relative w-24 aspect-[3/4] flex-shrink-0 rounded-md overflow-hidden border-2 transition-all duration-200 ${
+                                    className={`relative w-20 aspect-[3/4] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-300 ${
                                         currentImageIndex === idx 
-                                            ? 'border-stone-900 opacity-100 shadow-md ring-1 ring-stone-200' 
-                                            : 'border-transparent opacity-50 hover:opacity-100 hover:border-stone-300'
+                                            ? 'ring-2 ring-pink-600 ring-offset-2 opacity-100' 
+                                            : 'opacity-60 hover:opacity-100'
                                     }`}
                                 >
                                     <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
@@ -357,36 +344,48 @@ const ProductDetailsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* --- RIGHT COLUMN: DETAILS (Sticky on Desktop) --- */}
-            {/* CHANGED: Restricted max-width to 500px to match image better */}
-            <div className="lg:sticky lg:top-24 h-fit mt-6 lg:mt-0 px-4 sm:px-6 lg:px-0 max-w-[500px]">
+            {/* --- RIGHT COLUMN: DETAILS --- */}
+            <div className="px-4 pt-6 lg:pt-0">
                 
-                <div className="mb-8 border-b border-stone-100 pb-6">
-                    <h1 className="text-2xl lg:text-4xl font-light text-stone-900 leading-tight tracking-tight mb-3">{product.name}</h1>
-                    {/* Price Display Updated: Old Price First, New Price Pink & Bold */}
-                    <div className="flex items-baseline gap-3">
-                         {hasDiscount ? (
-                            <>
-                                <span className="text-xl text-stone-400 line-through decoration-1">৳{regularPrice.toLocaleString('en-IN')}</span>
-                                <span className="text-2xl lg:text-3xl font-bold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
-                            </>
-                         ) : (
-                            <span className="text-2xl lg:text-3xl font-bold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
+                <div className="mb-6 border-b border-stone-100 pb-6">
+                    <div className="flex justify-between items-start">
+                        <h1 className="text-2xl lg:text-4xl font-bold text-stone-900 leading-tight mb-2">{product.name}</h1>
+                        <button onClick={handleShare} className="hidden lg:flex p-2 text-stone-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition">
+                            <Share2 className="w-5 h-5"/>
+                        </button>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="flex text-yellow-400">
+                             {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+                        </div>
+                        <span className="text-xs text-stone-500 font-medium">(New Arrival)</span>
+                    </div>
+
+                    <div className="flex items-baseline gap-4 mt-2">
+                         <span className="text-3xl lg:text-4xl font-extrabold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
+                         {hasDiscount && (
+                            <div className="flex flex-col items-start">
+                                <span className="text-lg text-stone-400 line-through">৳{regularPrice.toLocaleString('en-IN')}</span>
+                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                    SAVE ৳{(regularPrice - product.price).toLocaleString()}
+                                </span>
+                            </div>
                          )}
                     </div>
                 </div>
 
                 {/* Size Selector */}
-                <div className="mb-8">
-                    <div className="flex justify-between items-end mb-4">
-                         <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">Select Size</span>
+                <div className="mb-6">
+                    <div className="flex justify-between items-center mb-3">
+                         <span className="text-sm font-bold text-stone-900">Select Size</span>
                          {settings.productPagePromoImage && (
-                            <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center text-xs font-medium text-stone-500 hover:text-stone-900 underline transition group">
-                                <Ruler className="w-3 h-3 mr-1 group-hover:text-pink-600 transition-colors"/> Size Guide
+                            <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center text-xs font-semibold text-pink-600 hover:text-pink-700 transition">
+                                <Ruler className="w-3.5 h-3.5 mr-1"/> Size Guide
                             </button>
                         )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                         {sizes.map(size => {
                              const isSelected = selectedSize === size;
                              return (
@@ -395,12 +394,12 @@ const ProductDetailsPage: React.FC = () => {
                                     onClick={() => !isFreeSizeOnly && setSelectedSize(size)}
                                     disabled={isFreeSizeOnly && size !== 'Free'}
                                     className={`
-                                        h-12 min-w-[3.5rem] px-4 flex items-center justify-center text-sm font-medium transition-all duration-200 border
+                                        h-10 sm:h-12 min-w-[3.5rem] px-4 rounded-lg flex items-center justify-center text-sm font-semibold transition-all duration-200 border
                                         ${isSelected 
                                             ? 'bg-stone-900 text-white border-stone-900 shadow-md transform scale-105' 
-                                            : 'bg-white text-stone-700 border-stone-200 hover:border-stone-900'
+                                            : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
                                         }
-                                        ${isFreeSizeOnly && size !== 'Free' ? 'opacity-40 cursor-not-allowed decoration-slice line-through bg-stone-50' : ''}
+                                        ${isFreeSizeOnly && size !== 'Free' ? 'opacity-40 cursor-not-allowed bg-stone-50 border-stone-100 text-stone-400 decoration-slice line-through' : ''}
                                     `}
                                 >
                                     {size === 'Free' ? 'One Size' : size}
@@ -408,68 +407,106 @@ const ProductDetailsPage: React.FC = () => {
                              );
                         })}
                     </div>
-                    {isFreeSizeOnly && <p className="text-xs text-stone-500 mt-2">This style comes in a single size designed to fit most body types.</p>}
+                </div>
+                
+                {/* --- MOBILE QUANTITY SELECTOR (Distinct Section) --- */}
+                <div className="lg:hidden mb-8">
+                     <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100">
+                        <span className="font-semibold text-stone-700 text-sm">Quantity</span>
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                                className="w-9 h-9 flex items-center justify-center bg-white border border-stone-200 rounded-full shadow-sm text-stone-600 active:scale-90 transition hover:border-pink-300 hover:text-pink-600"
+                            >
+                                <Minus className="w-4 h-4"/>
+                            </button>
+                            <span className="text-lg font-bold text-stone-900 w-6 text-center">{quantity}</span>
+                            <button 
+                                onClick={() => setQuantity(quantity + 1)} 
+                                className="w-9 h-9 flex items-center justify-center bg-white border border-stone-200 rounded-full shadow-sm text-stone-600 active:scale-90 transition hover:border-pink-300 hover:text-pink-600"
+                            >
+                                <Plus className="w-4 h-4"/>
+                            </button>
+                        </div>
+                     </div>
                 </div>
 
-                {/* Desktop: Actions */}
-                <div className="hidden lg:flex flex-col gap-3 mb-10">
+                {/* Desktop Actions */}
+                <div className="hidden lg:flex flex-col gap-4 mb-10">
                     <div className="flex gap-4">
-                        {/* Quantity */}
-                         <div className="flex items-center border border-stone-200 w-28 justify-between px-2 h-14 hover:border-stone-400 transition">
-                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-stone-500 hover:text-stone-900 p-2"><Minus className="w-4 h-4"/></button>
-                            <span className="font-semibold text-stone-900">{quantity}</span>
-                            <button onClick={() => setQuantity(quantity + 1)} className="text-stone-500 hover:text-stone-900 p-2"><Plus className="w-4 h-4"/></button>
+                        {/* Desktop Quantity */}
+                         <div className="flex items-center border border-stone-200 rounded-xl w-32 justify-between px-2 h-14 bg-white">
+                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center text-stone-500 hover:text-stone-900 transition"><Minus className="w-4 h-4"/></button>
+                            <span className="font-bold text-stone-900 text-lg">{quantity}</span>
+                            <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center text-stone-500 hover:text-stone-900 transition"><Plus className="w-4 h-4"/></button>
                         </div>
                         
-                        {/* Add to Cart */}
                         <button 
                             onClick={handleAddToCart} 
-                            className="flex-1 border border-stone-900 text-stone-900 font-bold text-sm uppercase tracking-widest h-14 hover:bg-stone-50 transition duration-300 flex items-center justify-center gap-2"
+                            className="flex-1 bg-white border-2 border-stone-900 text-stone-900 font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-stone-50 transition duration-300 flex items-center justify-center gap-2"
                         >
                             <ShoppingCart className="w-4 h-4" />
                             <span>Add to Cart</span>
                         </button>
                     </div>
 
-                    {/* Buy Now (Primary) */}
                     <button 
                         onClick={handleBuyNow} 
-                        className="w-full bg-pink-600 text-white font-bold text-sm uppercase tracking-widest h-14 hover:bg-pink-700 transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform active:scale-[0.99]"
+                        className="w-full bg-pink-600 text-white font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-pink-700 transition duration-300 flex items-center justify-center gap-2 shadow-xl shadow-pink-200 hover:shadow-2xl transform hover:-translate-y-0.5"
                     >
                         <span>Buy It Now</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-5 h-5" />
                     </button>
-
-                    {/* UPDATED: Removed Free shipping text */}
+                </div>
+                
+                {/* Trust Badges (Professional Look) */}
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                    <TrustBadge icon={ShieldCheck} title="Authentic" sub="100% Original Product" />
+                    <TrustBadge icon={Truck} title="Fast Delivery" sub="All over Bangladesh" />
+                    <TrustBadge icon={RefreshCw} title="Easy Return" sub="If goods are damaged" />
+                    <TrustBadge icon={CreditCard} title="Secure Payment" sub="COD & Online Payment" />
                 </div>
 
-                {/* Accordions (Clean & Minimal) */}
-                <div className="space-y-0 border-b border-stone-200">
-                    <Accordion title="Description" defaultOpen>
-                        <p className="mb-4 text-stone-600">{product.description}</p>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                             <div className="flex justify-between border-b border-stone-100 py-1">
-                                 <span className="text-stone-500">Fabric</span>
-                                 <span className="font-medium text-stone-900">{product.fabric}</span>
+                {/* Accordions */}
+                <div className="space-y-2">
+                    <Accordion title="Product Description" defaultOpen>
+                        <p className="mb-4 text-stone-600 font-light">{product.description}</p>
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm mt-4 p-4 bg-stone-50 rounded-lg">
+                             <div className="flex flex-col">
+                                 <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider mb-1">Fabric</span>
+                                 <span className="font-semibold text-stone-800">{product.fabric}</span>
                              </div>
-                             <div className="flex justify-between border-b border-stone-100 py-1">
-                                 <span className="text-stone-500">Fit</span>
-                                 <span className="font-medium text-stone-900">Regular</span>
+                             <div className="flex flex-col">
+                                 <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider mb-1">Fit</span>
+                                 <span className="font-semibold text-stone-800">Regular Fit</span>
                              </div>
                         </div>
                     </Accordion>
                     <Accordion title="Material & Care" icon={ShieldCheck}>
-                        <p className="mb-2">Quality is our priority. This garment is made from premium {product.fabric}.</p>
-                        <ul className="list-disc pl-4 space-y-1 text-stone-500">
-                             <li>Machine wash cold with like colors</li>
-                             <li>Do not bleach</li>
-                             <li>Tumble dry low</li>
-                             <li>Cool iron if needed</li>
-                        </ul>
+                        <div className="space-y-2">
+                            <p>Crafted from premium {product.fabric} for maximum comfort and longevity.</p>
+                            <ul className="list-disc pl-5 space-y-1 text-stone-500 marker:text-pink-300">
+                                 <li>Machine wash cold with like colors</li>
+                                 <li>Do not bleach</li>
+                                 <li>Tumble dry low</li>
+                                 <li>Cool iron if needed</li>
+                            </ul>
+                        </div>
                     </Accordion>
-                    <Accordion title="Shipping & Returns" icon={Truck}>
-                         <p className="mb-2"><strong>Standard Delivery:</strong> 2-4 Business Days.</p>
-                         <p>Please Check the product in front of the delivery person. Once they leave, we cannot take responsibility for any issues. (ডেলিভারি গ্রহণের আগে ডেলিভারি ম্যানের সামনে প্রোডাক্টটি চেক করে নিন। ডেলিভারি ম্যান চলে গেলে কোনো সমস্যা গ্রহণযোগ্য হবে না)</p>
+                    <Accordion title="Delivery & Returns" icon={Truck}>
+                         <div className="space-y-3">
+                             <div className="flex items-start gap-3">
+                                 <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2"></div>
+                                 <p><strong>Inside Dhaka:</strong> 2-3 Business Days</p>
+                             </div>
+                             <div className="flex items-start gap-3">
+                                 <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2"></div>
+                                 <p><strong>Outside Dhaka:</strong> 3-5 Business Days</p>
+                             </div>
+                             <div className="bg-amber-50 p-3 rounded-lg text-amber-800 text-xs border border-amber-100 mt-2">
+                                 Please check the product in front of the delivery man. Returns are only accepted instantly upon delivery if there is a defect.
+                             </div>
+                         </div>
                     </Accordion>
                 </div>
 
@@ -478,31 +515,24 @@ const ProductDetailsPage: React.FC = () => {
       </main>
 
       {/* --- Mobile Sticky Bottom Action Bar --- */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-4 py-3 lg:hidden z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-3 lg:hidden z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
          <div className="flex gap-3 max-w-md mx-auto">
-              {/* Quantity Small */}
-              <div className="flex items-center border border-stone-200 rounded-md w-24 justify-between px-1 h-12 bg-white hidden xs:flex">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-stone-400 hover:text-pink-600 p-2"><Minus className="w-3 h-3"/></button>
-                  <span className="font-bold text-stone-900 text-sm">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="text-stone-400 hover:text-pink-600 p-2"><Plus className="w-3 h-3"/></button>
-              </div>
-
-              {/* Add to Cart */}
+              {/* Add to Cart - Secondary */}
               <button 
                   onClick={handleAddToCart} 
-                  className="flex-1 bg-white border border-stone-300 text-stone-900 font-bold text-xs uppercase tracking-wide h-12 rounded-md hover:bg-stone-50 active:scale-95 transition flex items-center justify-center gap-2"
+                  className="flex-1 bg-white border-2 border-stone-200 text-stone-700 font-bold text-sm h-12 rounded-full hover:bg-stone-50 hover:border-stone-300 active:scale-95 transition flex items-center justify-center gap-2"
               >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span className="hidden xs:inline">Add</span>
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>Add to Cart</span>
               </button>
 
-              {/* Buy Now - Changed BG to Pink */}
+              {/* Buy Now - Primary */}
               <button 
                   onClick={handleBuyNow} 
-                  className="flex-[1.5] bg-pink-600 text-white font-bold text-xs uppercase tracking-wide h-12 rounded-md hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg"
+                  className="flex-[1.5] bg-pink-600 text-white font-bold text-base h-12 rounded-full hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg shadow-pink-200"
               >
                   <span>Buy Now</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-5 h-5" />
               </button>
          </div>
       </div>
@@ -510,26 +540,21 @@ const ProductDetailsPage: React.FC = () => {
        {/* Size Guide Modal */}
        {isSizeGuideOpen && settings.productPagePromoImage && (
             <div
-                className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn"
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
                 onClick={() => setIsSizeGuideOpen(false)}
             >
-                {/* Increased max-width from max-w-lg to max-w-4xl for larger image */}
-                <div className="relative max-w-4xl w-full bg-white shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                    
-                    {/* Header with Title and Close 'X' */}
-                    <div className="flex justify-between items-center p-4 border-b border-stone-100">
+                <div className="relative max-w-4xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-scaleIn flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-between items-center p-4 border-b border-stone-100 bg-stone-50">
                         <h3 className="text-lg font-bold text-stone-900">Size Guide</h3>
                         <button 
                             onClick={() => setIsSizeGuideOpen(false)} 
-                            className="p-2 bg-stone-100 rounded-full hover:bg-stone-200 text-stone-600 transition"
+                            className="p-2 bg-white rounded-full hover:bg-stone-200 text-stone-600 transition shadow-sm"
                         >
                             <X className="w-5 h-5" /> 
                         </button>
                     </div>
-
-                    {/* Scrollable Image Area */}
-                    <div className="overflow-y-auto p-1 bg-stone-50 flex-1">
-                        <img src={settings.productPagePromoImage} alt="Size Guide" className="w-full h-auto" />
+                    <div className="overflow-y-auto p-4 flex-1 bg-white">
+                        <img src={settings.productPagePromoImage} alt="Size Guide" className="w-full h-auto rounded-lg" />
                     </div>
                 </div>
             </div>
