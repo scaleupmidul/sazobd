@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../store';
 import { Save, LoaderCircle, Plus, Trash2, CheckCircle } from 'lucide-react';
@@ -148,6 +149,7 @@ const AdminSettingsPage: React.FC = () => {
     const [promoImage, setPromoImage] = useState(settings.productPagePromoImage || '');
     const [homepageNewArrivalsCount, setHomepageNewArrivalsCount] = useState(settings.homepageNewArrivalsCount || 4);
     const [homepageTrendingCount, setHomepageTrendingCount] = useState(settings.homepageTrendingCount || 4);
+    const [showSliderText, setShowSliderText] = useState(settings.showSliderText ?? true);
 
     // State for Content Settings
     const [footerDescription, setFooterDescription] = useState(settings.footerDescription || '');
@@ -182,6 +184,7 @@ const AdminSettingsPage: React.FC = () => {
         setPromoImage(settings.productPagePromoImage || '');
         setHomepageNewArrivalsCount(settings.homepageNewArrivalsCount || 4);
         setHomepageTrendingCount(settings.homepageTrendingCount || 4);
+        setShowSliderText(settings.showSliderText ?? true);
         setFooterDescription(settings.footerDescription || '');
         setManagedCategories(settings.categories || []);
         setCategoryImages(settings.categoryImages || []);
@@ -317,6 +320,7 @@ const AdminSettingsPage: React.FC = () => {
                 productPagePromoImage: promoImage,
                 homepageNewArrivalsCount,
                 homepageTrendingCount,
+                showSliderText,
                 footerDescription,
                 categories: managedCategories,
                 categoryImages,
@@ -502,6 +506,20 @@ const AdminSettingsPage: React.FC = () => {
                                 <input type="number" id="homepageTrendingCount" value={homepageTrendingCount} onChange={(e) => setHomepageTrendingCount(Number(e.target.value))} className="w-full p-3 border border-gray-300 rounded-lg text-sm bg-white text-black" min="0" />
                                 <p className="text-xs text-gray-500 mt-1">Number of items to show in the "Trending Products" section.</p>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-white p-6 rounded-lg shadow-md">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Slider Content Visibility</h2>
+                        <div className="p-4 bg-gray-50 rounded-lg border">
+                            <label className="flex items-center justify-between cursor-pointer">
+                                <span className="font-medium text-sm text-gray-800">Show Text & Button on Slider</span>
+                                <div className="relative">
+                                    <input type="checkbox" className="sr-only peer" checked={showSliderText} onChange={(e) => setShowSliderText(e.target.checked)} />
+                                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-pink-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                                </div>
+                            </label>
+                            <p className="text-xs text-gray-500 mt-1">If disabled, the slider will only show images without titles, subtitles, or buttons.</p>
                         </div>
                     </div>
 
