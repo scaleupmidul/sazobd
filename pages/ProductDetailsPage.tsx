@@ -218,10 +218,10 @@ const ProductDetailsPage: React.FC = () => {
 
         <div className="lg:grid lg:grid-cols-12 lg:gap-16 xl:gap-24 items-start">
             
-            {/* --- LEFT COLUMN: IMAGES (Modern Grid) --- */}
+            {/* --- LEFT COLUMN: IMAGES (Slider with Thumbnails) --- */}
             <div className="lg:col-span-7">
                 
-                {/* Mobile: Full Screen Swipeable Slider */}
+                {/* Mobile: Full Screen Swipeable Slider (Keep existing) */}
                 <div 
                     className="lg:hidden relative bg-stone-100 w-full aspect-[3/4] overflow-hidden group touch-pan-y"
                     onTouchStart={onTouchStart}
@@ -254,26 +254,66 @@ const ProductDetailsPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Desktop: 2-Column Grid Layout (Fashion Standard) */}
-                <div className="hidden lg:grid grid-cols-2 gap-2">
-                    {images.map((img, index) => (
-                        <div 
-                            key={index} 
-                            // Make the first image span 2 cols if there's an odd number of images total, to create a nice layout
-                            className={`relative bg-stone-50 cursor-zoom-in group overflow-hidden ${index === 0 && images.length % 2 !== 0 ? 'col-span-2 aspect-[16/9]' : 'aspect-[3/4]'}`}
-                        >
-                             <img src={img} alt={`${product.name} - ${index}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                             
-                             {index === 0 && (
-                                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                    {product.onSale && <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider">Sale</span>}
-                                    {product.isNewArrival && <span className="bg-stone-900 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider">New Season</span>}
+                {/* Desktop: Enhanced Slider with Thumbnails */}
+                <div className="hidden lg:flex flex-col gap-6">
+                    {/* Main Image Stage */}
+                    <div className="relative w-full aspect-[3/4] bg-stone-100 rounded-lg overflow-hidden group shadow-sm border border-stone-100">
+                        {images.length > 0 ? (
+                            <>
+                                <img
+                                    src={images[currentImageIndex]}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110 cursor-zoom-in"
+                                />
+                                
+                                {/* Navigation Arrows */}
+                                {images.length > 1 && (
+                                    <>
+                                        <button 
+                                            onClick={handlePrevImage}
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"
+                                            aria-label="Previous image"
+                                        >
+                                            <ChevronLeft className="w-6 h-6" />
+                                        </button>
+                                        <button 
+                                            onClick={handleNextImage}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110"
+                                            aria-label="Next image"
+                                        >
+                                            <ChevronRight className="w-6 h-6" />
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Badges */}
+                                <div className="absolute top-6 left-6 flex flex-col gap-2 pointer-events-none">
+                                    {product.onSale && <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">Sale</span>}
+                                    {product.isNewArrival && <span className="bg-stone-900 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">New In</span>}
                                 </div>
-                             )}
+                            </>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-stone-400">No Image Available</div>
+                        )}
+                    </div>
+
+                    {/* Thumbnails */}
+                    {images.length > 1 && (
+                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                            {images.map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setCurrentImageIndex(idx)}
+                                    className={`relative w-24 aspect-[3/4] flex-shrink-0 rounded-md overflow-hidden border-2 transition-all duration-200 ${
+                                        currentImageIndex === idx 
+                                            ? 'border-stone-900 opacity-100 shadow-md ring-1 ring-stone-200' 
+                                            : 'border-transparent opacity-50 hover:opacity-100 hover:border-stone-300'
+                                    }`}
+                                >
+                                    <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
+                                </button>
+                            ))}
                         </div>
-                    ))}
-                    {images.length === 0 && (
-                         <div className="w-full bg-stone-100 flex items-center justify-center text-stone-400 aspect-[3/4] col-span-2">No Image Available</div>
                     )}
                 </div>
             </div>
