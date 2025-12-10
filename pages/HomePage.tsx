@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
@@ -111,10 +112,12 @@ const HomePage: React.FC = () => {
     <>
       <HeroSlider />
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24">
+      {/* Reduced padding (px-2) on mobile for wider cards */}
+      <main className="max-w-[1440px] mx-auto px-2 sm:px-6 lg:px-8 pt-16 sm:pt-24">
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="New Arrivals" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Reduced gap (gap-2) on mobile for wider cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
@@ -139,7 +142,8 @@ const HomePage: React.FC = () => {
 
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="Trending Products" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Reduced gap (gap-2) on mobile for wider cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
