@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '../types';
 import { ShoppingCart, ChevronDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -57,17 +59,25 @@ const ProductDetailsPage: React.FC = () => {
   }));
 
   // FETCH FRESH DATA ON MOUNT
-  // Optimized to prevent infinite loops by relying on URL path ID
+  // This ensures that even if the 'products' list in the store is stale (cached),
+  // we fetch the latest images and details for the currently viewed product.
   useEffect(() => {
-    const pathParts = window.location.pathname.split('/');
-    const pathId = pathParts[pathParts.length - 1];
-    
-    if (pathId && pathId !== 'product') {
-         refreshProduct(pathId);
+    // Priority 1: Use the product ID if already selected
+    if (product?.id) {
+        refreshProduct(product.id);
+    } else {
+        // Priority 2: Extract ID from URL if directly landing on page or refresh
+        const pathParts = window.location.pathname.split('/');
+        // Path should be /product/:id. So ID is last part.
+        const pathId = pathParts[pathParts.length - 1];
+        if (pathId && pathId !== 'product') {
+             refreshProduct(pathId);
+        }
     }
-  }, [refreshProduct]);
+  }, [product?.id, refreshProduct]);
 
   // Display exactly what is available in product.images. 
+  // No automatic duplication/repeating logic.
   const images = useMemo(() => {
     if (!product || !product.images) return [];
     return product.images.filter(img => img && img !== "");
@@ -106,7 +116,7 @@ const ProductDetailsPage: React.FC = () => {
             ecommerce: {
                 currency: 'BDT',
                 items: [{
-                    item_id: itemIdForAnalytics,
+                    item_id: itemIdForAnalytics, // Dynamic numeric ID
                     item_name: product.name,
                     item_category: product.category,
                     price: product.price
@@ -228,25 +238,22 @@ const ProductDetailsPage: React.FC = () => {
             )}
           </div>
           
-          {/* Thumbnails Container */}
+          {/* Thumbnails - Always show if at least 1 image exists to confirm loaded state */}
           {images.length > 0 && (
-              <div className="mt-4 border border-stone-200 rounded-xl p-2 sm:p-3 bg-stone-50/50">
-                  <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-                    {images.map((img, index) => (
-                      <div 
-                        key={index}
-                        // Standardized size and removed scale effect
-                        className={`relative w-20 sm:w-24 aspect-[3.5/4] flex-shrink-0 rounded-lg cursor-pointer transition-all duration-200 border-2 overflow-hidden ${index === currentImageIndex ? 'border-pink-600 ring-1 ring-pink-600 opacity-100' : 'border-stone-200 hover:border-pink-300 opacity-70 hover:opacity-100'}`}
-                        onClick={() => setCurrentImageIndex(index)}
-                      >
-                        <img
-                            src={img}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
+              <div className="flex space-x-3 overflow-x-auto p-1 scrollbar-hide">
+                {images.map((img, index) => (
+                  <div 
+                    key={index}
+                    className={`relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg cursor-pointer transition duration-300 border-2 overflow-hidden ${index === currentImageIndex ? 'border-pink-600 ring-2 ring-pink-100 scale-105' : 'border-transparent opacity-70 hover:opacity-100 hover:border-stone-200'}`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  >
+                    <img
+                        src={img}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                    />
                   </div>
+                ))}
               </div>
           )}
         </div>
@@ -257,11 +264,7 @@ const ProductDetailsPage: React.FC = () => {
             {product.onSale && <span className="text-lg text-stone-500 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>}
             <span className="text-3xl font-medium text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
           </div>
-
-          {/* Product Description Text Box */}
-          <div className="p-4 bg-stone-50 rounded-lg border border-stone-200">
-             <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-line">{product.description}</p>
-          </div>
+          <p className="text-sm text-stone-700 leading-relaxed">{product.description}</p>
             
           <div className="space-y-4 pt-4 pb-6 border-b border-stone-200">
              <div className="flex justify-between items-center">
@@ -272,18 +275,12 @@ const ProductDetailsPage: React.FC = () => {
                     </button>
                 )}
             </div>
-            {/* Standardized Size Buttons */}
             <div className="flex flex-wrap gap-3">
               {sizes.map(size => (
                 <button
                   key={size}
                   onClick={() => !isFreeSizeOnly && setSelectedSize(size)}
-                  className={`
-                    h-10 min-w-[3rem] px-3 flex items-center justify-center text-sm font-medium rounded-lg border transition duration-200
-                    ${selectedSize === size ? 'bg-pink-600 text-white border-pink-600 shadow-sm' : 'bg-white text-stone-700 border-stone-300 hover:bg-pink-50 hover:border-pink-400'}
-                    ${isFreeSizeOnly && size !== 'Free' ? 'opacity-50 cursor-not-allowed' : ''}
-                    ${isFreeSizeOnly && size === 'Free' ? 'shadow-lg ring-2 ring-pink-600' : ''}
-                  `}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg border transition duration-200 ${selectedSize === size ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-stone-700 border-stone-300 hover:bg-pink-50 hover:border-pink-400'} ${isFreeSizeOnly && size !== 'Free' ? 'opacity-50 cursor-not-allowed' : ''} ${isFreeSizeOnly && size === 'Free' ? 'shadow-lg ring-2 ring-pink-600' : ''}`}
                   disabled={isFreeSizeOnly && size !== 'Free'}
                 >
                   {size === 'Free' ? 'Free Size' : size}
