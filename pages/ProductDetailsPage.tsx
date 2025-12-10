@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '../types';
-import { ShoppingCart, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X } from 'lucide-react';
 import { useAppStore } from '../store';
 
 // --- Reusable Components ---
@@ -241,10 +241,10 @@ const ProductDetailsPage: React.FC = () => {
                         <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
                     )}
                     
-                    {/* Status Tags */}
+                    {/* Status Tags (Mobile) - UPDATED: Removed Sale, Added BEST */}
                     <div className="absolute bottom-4 left-4 flex gap-2">
-                         {product.onSale && <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">Sale</span>}
                          {product.isNewArrival && <span className="bg-white text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">New In</span>}
+                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
                     </div>
 
                     {/* Dots Indicator */}
@@ -290,10 +290,10 @@ const ProductDetailsPage: React.FC = () => {
                                     </>
                                 )}
 
-                                {/* Badges */}
+                                {/* Badges (Desktop) - UPDATED: Removed Sale, Added BEST */}
                                 <div className="absolute top-6 left-6 flex flex-col gap-2 pointer-events-none">
-                                    {product.onSale && <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">Sale</span>}
                                     {product.isNewArrival && <span className="bg-stone-900 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">New In</span>}
+                                    {product.isTrending && <span className="bg-amber-400 text-stone-900 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-sm">BEST</span>}
                                 </div>
                             </>
                         ) : (
@@ -329,9 +329,9 @@ const ProductDetailsPage: React.FC = () => {
                 <div className="mb-8 border-b border-stone-100 pb-6">
                     <h1 className="text-2xl lg:text-4xl font-light text-stone-900 leading-tight tracking-tight mb-3">{product.name}</h1>
                     <div className="flex items-center gap-4">
-                         <span className="text-xl lg:text-2xl font-bold text-stone-900">৳{product.price.toLocaleString('en-IN')}</span>
+                         {/* UPDATED: Price color pink, removed Save amount */}
+                         <span className="text-xl lg:text-2xl font-bold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
                          {product.onSale && <span className="text-lg text-stone-400 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>}
-                         {product.onSale && <span className="text-xs font-bold text-red-600 uppercase tracking-wide bg-red-50 px-2 py-1 rounded">Save ৳200</span>}
                     </div>
                 </div>
 
@@ -399,9 +399,7 @@ const ProductDetailsPage: React.FC = () => {
                         <ArrowRight className="w-4 h-4" />
                     </button>
 
-                    <p className="text-center text-xs text-stone-500 mt-2 flex items-center justify-center gap-1">
-                        <Truck className="w-3 h-3" /> Free shipping on orders over ৳5,000
-                    </p>
+                    {/* UPDATED: Removed Free shipping text */}
                 </div>
 
                 {/* Accordions (Clean & Minimal) */}
@@ -457,10 +455,10 @@ const ProductDetailsPage: React.FC = () => {
                   <span className="hidden xs:inline">Add</span>
               </button>
 
-              {/* Buy Now */}
+              {/* Buy Now - Changed BG to Pink */}
               <button 
                   onClick={handleBuyNow} 
-                  className="flex-[1.5] bg-stone-900 text-white font-bold text-xs uppercase tracking-wide h-12 rounded-md hover:bg-stone-800 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg"
+                  className="flex-[1.5] bg-pink-600 text-white font-bold text-xs uppercase tracking-wide h-12 rounded-md hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg"
               >
                   <span>Buy Now</span>
                   <ArrowRight className="w-4 h-4" />
@@ -471,14 +469,37 @@ const ProductDetailsPage: React.FC = () => {
        {/* Size Guide Modal */}
        {isSizeGuideOpen && settings.productPagePromoImage && (
             <div
-                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fadeIn"
+                className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn"
                 onClick={() => setIsSizeGuideOpen(false)}
             >
-                <div className="relative max-w-lg w-full bg-white rounded-lg overflow-hidden shadow-2xl animate-scaleIn" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => setIsSizeGuideOpen(false)} className="absolute top-2 right-2 p-2 bg-white/50 rounded-full hover:bg-white text-stone-900 z-10 transition">
-                        <ChevronDown className="w-6 h-6 rotate-180" /> 
-                    </button>
-                    <img src={settings.productPagePromoImage} alt="Size Guide" className="w-full h-auto" />
+                {/* Increased max-width from max-w-lg to max-w-4xl for larger image */}
+                <div className="relative max-w-4xl w-full bg-white rounded-xl shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                    
+                    {/* Header with Title and Close 'X' */}
+                    <div className="flex justify-between items-center p-4 border-b border-stone-100">
+                        <h3 className="text-lg font-bold text-stone-900">Size Guide</h3>
+                        <button 
+                            onClick={() => setIsSizeGuideOpen(false)} 
+                            className="p-2 bg-stone-100 rounded-full hover:bg-stone-200 text-stone-600 transition"
+                        >
+                            <X className="w-5 h-5" /> 
+                        </button>
+                    </div>
+
+                    {/* Scrollable Image Area */}
+                    <div className="overflow-y-auto p-1 bg-stone-50 flex-1">
+                        <img src={settings.productPagePromoImage} alt="Size Guide" className="w-full h-auto" />
+                    </div>
+
+                    {/* Separate Cancel Button at Bottom */}
+                    <div className="p-4 border-t border-stone-100 bg-white flex justify-end">
+                         <button 
+                            onClick={() => setIsSizeGuideOpen(false)} 
+                            className="bg-stone-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-stone-800 transition"
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         )}
