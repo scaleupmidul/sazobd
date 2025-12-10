@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '../types';
 import { ShoppingCart, ChevronDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -56,37 +58,23 @@ const ProductDetailsPage: React.FC = () => {
     refreshProduct: state.refreshProduct
   }));
 
-  // Local loading state to prevent "Not Found" flash on refresh
-  const [isFetching, setIsFetching] = useState(!product);
-
+  // FETCH FRESH DATA ON MOUNT
+  // This ensures that even if the 'products' list in the store is stale (cached),
+  // we fetch the latest images and details for the currently viewed product.
   useEffect(() => {
-    const fetchProductData = async () => {
+    // Priority 1: Use the product ID if already selected
+    if (product?.id) {
+        refreshProduct(product.id);
+    } else {
+        // Priority 2: Extract ID from URL if directly landing on page or refresh
         const pathParts = window.location.pathname.split('/');
+        // Path should be /product/:id. So ID is last part.
         const pathId = pathParts[pathParts.length - 1];
-
-        if (!pathId || pathId === 'product') {
-            setIsFetching(false);
-            return;
+        if (pathId && pathId !== 'product') {
+             refreshProduct(pathId);
         }
-
-        // If product is loaded and matches, just do a silent refresh
-        if (product && (product.id === pathId || product.productId === pathId)) {
-            setIsFetching(false);
-            refreshProduct(product.id);
-            return;
-        }
-
-        // Otherwise, active fetch
-        setIsFetching(true);
-        try {
-            await refreshProduct(pathId);
-        } finally {
-            setIsFetching(false);
-        }
-    };
-
-    fetchProductData();
-  }, [refreshProduct, window.location.pathname]);
+    }
+  }, [product?.id, refreshProduct]);
 
   // Display exactly what is available in product.images. 
   // No automatic duplication/repeating logic.
@@ -170,7 +158,7 @@ const ProductDetailsPage: React.FC = () => {
     }
   }
 
-  if ((loading || isFetching) && !product) {
+  if (loading && !product) {
     return <ProductDetailsPageSkeleton />;
   }
 
