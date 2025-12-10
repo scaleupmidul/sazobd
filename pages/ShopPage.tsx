@@ -165,26 +165,18 @@ const ShopPage: React.FC = () => {
   const showSkeletons = isInitialLoading && products.length === 0;
 
   return (
-    <main className="max-w-screen-2xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-0 lg:pt-12 pb-24">
+    <main className="max-w-screen-2xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-6 lg:pt-12 pb-24">
       
-      {/* Desktop Header */}
-      <div className="hidden lg:block text-center mt-8 mb-12">
-        <h2 className="text-3xl sm:text-4xl font-bold text-stone-800">SAZO Styles</h2>
+      {/* Page Title - Centered in Body */}
+      <div className="text-center mb-6 lg:mb-12">
+        <h2 className="text-3xl sm:text-4xl font-bold text-stone-800 tracking-tight">SAZO Styles</h2>
       </div>
 
-      {/* Mobile Sticky Professional Header (SAZO Styles centered) */}
-      <div className="lg:hidden sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-stone-100 -mx-2 py-3 mb-4 shadow-sm flex items-center justify-center">
-          <h1 className="text-xl font-bold text-stone-900 tracking-tight">SAZO Styles</h1>
-      </div>
-
-      {/* Mobile Filter & Count Bar (Body) */}
-      <div className="lg:hidden flex justify-between items-center mb-6 px-1">
-           <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
-              {filteredProducts.length} Products
-           </span>
+      {/* Mobile Filter Button - Right Aligned */}
+      <div className="lg:hidden flex justify-end mb-6">
            <button 
                 onClick={() => setIsFilterOpen(true)}
-                className="flex items-center space-x-2 text-stone-800 font-semibold text-sm hover:text-pink-600 transition bg-stone-50 px-4 py-2 rounded-full border border-stone-200 active:scale-95"
+                className="flex items-center space-x-2 text-stone-900 font-bold text-xs uppercase tracking-wider bg-white px-5 py-2.5 rounded-full border border-stone-200 shadow-sm active:scale-95 transition hover:bg-stone-50"
             >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span>Filter</span>
