@@ -221,10 +221,9 @@ const ProductDetailsPage: React.FC = () => {
     );
   }
 
-  // Calculate prices based on optional regularPrice
-  const regularPrice = product.regularPrice || 0;
+  // Calculate prices based on optional regularPrice or simulate if onSale
+  const regularPrice = (product as any).regularPrice || (product.onSale ? product.price + 200 : 0);
   const hasDiscount = regularPrice > product.price;
-  const discountAmount = hasDiscount ? regularPrice - product.price : 0;
 
   return (
     <div className="bg-white min-h-screen pb-24 lg:pb-0 relative"> 
@@ -364,18 +363,15 @@ const ProductDetailsPage: React.FC = () => {
                 
                 <div className="mb-8 border-b border-stone-100 pb-6">
                     <h1 className="text-2xl lg:text-4xl font-light text-stone-900 leading-tight tracking-tight mb-3">{product.name}</h1>
-                    <div className="flex items-center gap-4 flex-wrap">
-                         {/* UPDATED: Price color pink, removed Save amount */}
-                         <span className="text-xl lg:text-2xl font-bold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
-                         
-                         {/* Dynamic Old Price & Savings Badge */}
-                         {hasDiscount && (
+                    {/* Price Display Updated: Old Price First, New Price Pink & Bold */}
+                    <div className="flex items-baseline gap-3">
+                         {hasDiscount ? (
                             <>
-                                <span className="text-lg text-stone-400 line-through">৳{regularPrice.toLocaleString('en-IN')}</span>
-                                <span className="bg-pink-100 text-pink-700 text-xs font-bold px-2 py-1 rounded-sm">
-                                    Save ৳{discountAmount.toLocaleString('en-IN')}
-                                </span>
+                                <span className="text-xl text-stone-400 line-through decoration-1">৳{regularPrice.toLocaleString('en-IN')}</span>
+                                <span className="text-2xl lg:text-3xl font-bold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
                             </>
+                         ) : (
+                            <span className="text-2xl lg:text-3xl font-bold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
                          )}
                     </div>
                 </div>
@@ -473,7 +469,7 @@ const ProductDetailsPage: React.FC = () => {
                     </Accordion>
                     <Accordion title="Shipping & Returns" icon={Truck}>
                          <p className="mb-2"><strong>Standard Delivery:</strong> 2-4 Business Days.</p>
-                         <p>Please Check the product in front of the delivery person. Once they leave, we cannot take responsibility for any issues.</p>
+                         <p>Please Check the product in front of the delivery person. Once they leave, we cannot take responsibility for any issues. (ডেলিভারি গ্রহণের আগে ডেলিভারি ম্যানের সামনে প্রোডাক্টটি চেক করে নিন। ডেলিভারি ম্যান চলে গেলে কোনো সমস্যা গ্রহণযোগ্য হবে না)</p>
                     </Accordion>
                 </div>
 
