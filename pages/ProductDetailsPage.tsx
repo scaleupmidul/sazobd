@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '../types';
-import { ShoppingCart, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X, Star, CreditCard, RefreshCw } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X, Star, CreditCard, RefreshCw } from 'lucide-react';
 import { useAppStore } from '../store';
 
 // --- Reusable Components ---
@@ -227,6 +227,14 @@ const ProductDetailsPage: React.FC = () => {
   const regularPrice = product.regularPrice || 0;
   const hasDiscount = regularPrice > product.price;
 
+  // Custom component for tags to ensure consistency between mobile/desktop
+  const ProductTags = () => (
+    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
+        {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">NEW</span>}
+        {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">BEST</span>}
+    </div>
+  );
+
   return (
     <div className="bg-white min-h-screen pb-28 lg:pb-12 relative"> 
       
@@ -279,12 +287,8 @@ const ProductDetailsPage: React.FC = () => {
                         <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
                     )}
                     
-                    {/* Tags */}
-                    <div className="absolute top-4 left-4 flex flex-col gap-2">
-                         {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">New</span>}
-                         {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">Hot</span>}
-                         {hasDiscount && <span className="bg-green-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">Sale</span>}
-                    </div>
+                    {/* Updated Tags for Mobile */}
+                    <ProductTags />
                 </div>
 
                 {/* Desktop Gallery */}
@@ -294,6 +298,9 @@ const ProductDetailsPage: React.FC = () => {
                         onMouseEnter={() => setIsPaused(true)}
                         onMouseLeave={() => setIsPaused(false)}
                     >
+                        {/* Updated Tags for Desktop */}
+                        <ProductTags />
+
                         {images.length > 0 ? (
                             <>
                                 <img
@@ -355,19 +362,15 @@ const ProductDetailsPage: React.FC = () => {
                         </button>
                     </div>
                     
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="flex text-yellow-400">
-                             {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                        </div>
-                        <span className="text-xs text-stone-500 font-medium">(New Arrival)</span>
-                    </div>
+                    {/* Stars and (New Arrival) text Removed as per request */}
 
-                    <div className="flex items-baseline gap-4 mt-2">
+                    {/* Updated Price Alignment: items-center for vertical centering */}
+                    <div className="flex items-center gap-4 mt-2">
                          <span className="text-3xl lg:text-4xl font-extrabold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
                          {hasDiscount && (
                             <div className="flex flex-col items-start">
                                 <span className="text-lg text-stone-400 line-through">৳{regularPrice.toLocaleString('en-IN')}</span>
-                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-0.5">
                                     SAVE ৳{(regularPrice - product.price).toLocaleString()}
                                 </span>
                             </div>
@@ -501,7 +504,8 @@ const ProductDetailsPage: React.FC = () => {
                              </div>
                              <div className="flex items-start gap-3">
                                  <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2"></div>
-                                 <p><strong>Outside Dhaka:</strong> 3-5 Business Days</p>
+                                 {/* Updated delivery text */}
+                                 <p><strong>Outside Dhaka:</strong> 2-4 Business Days</p>
                              </div>
                              <div className="bg-amber-50 p-3 rounded-lg text-amber-800 text-xs border border-amber-100 mt-2">
                                  Please check the product in front of the delivery man. Returns are only accepted instantly upon delivery if there is a defect.
