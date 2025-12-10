@@ -165,7 +165,7 @@ const ShopPage: React.FC = () => {
   const showSkeletons = isInitialLoading && products.length === 0;
 
   return (
-    <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 lg:pt-12 pb-24">
+    <main className="max-w-screen-2xl mx-auto w-full px-4 pt-0 lg:pt-12 pb-24 lg:px-8">
       
       {/* Desktop Header */}
       <div className="hidden lg:block text-center mt-8 mb-12">
