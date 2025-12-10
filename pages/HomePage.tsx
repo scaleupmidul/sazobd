@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
@@ -111,17 +112,19 @@ const HomePage: React.FC = () => {
     <>
       <HeroSlider />
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24">
+      {/* Adjusted padding (px-[0.7rem]) on mobile for specific spacing request */}
+      <main className="max-w-[1440px] mx-auto px-[0.7rem] sm:px-6 lg:px-8 pt-16 sm:pt-24">
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="New Arrivals" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Changed gap to gap-[0.7rem] on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[0.7rem] sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
             ) : (
-               // Priority is given to the first 2 items for faster mobile loading
+               // Priority is given to the first 4 items for faster loading (desktop row / 2 mobile rows)
                newArrivalsDisplay.map((p, index) => (
-                 <ProductCard key={p.id} product={p} priority={index < 2} />
+                 <ProductCard key={p.id} product={p} priority={index < 4} />
                ))
             )}
           </div>
@@ -139,7 +142,8 @@ const HomePage: React.FC = () => {
 
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="Trending Products" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Changed gap to gap-[0.7rem] on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[0.7rem] sm:gap-6">
             {loading ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
