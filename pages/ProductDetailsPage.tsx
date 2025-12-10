@@ -221,8 +221,8 @@ const ProductDetailsPage: React.FC = () => {
     );
   }
 
-  // Calculate prices based on optional regularPrice or simulate if onSale
-  const regularPrice = (product as any).regularPrice || (product.onSale ? product.price + 200 : 0);
+  // Calculate prices based on optional regularPrice
+  const regularPrice = product.regularPrice || 0;
   const hasDiscount = regularPrice > product.price;
 
   return (
