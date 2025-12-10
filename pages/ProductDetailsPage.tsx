@@ -503,7 +503,7 @@ const ProductDetailsPage: React.FC = () => {
                 onClick={() => setIsSizeGuideOpen(false)}
             >
                 {/* Increased max-width from max-w-lg to max-w-4xl for larger image */}
-                <div className="relative max-w-4xl w-full bg-white rounded-xl shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                <div className="relative max-w-4xl w-full bg-white shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                     
                     {/* Header with Title and Close 'X' */}
                     <div className="flex justify-between items-center p-4 border-b border-stone-100">
