@@ -129,6 +129,7 @@ export interface AppSettings {
   footerDescription: string;
   homepageNewArrivalsCount: number;
   homepageTrendingCount: number;
+  showSliderText: boolean; // Toggle for text/button on hero slider
 }
 
 export interface AdminProductsPagination {
