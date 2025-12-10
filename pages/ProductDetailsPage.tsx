@@ -1,45 +1,54 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '../types';
-import { ShoppingCart, ChevronDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler } from 'lucide-react';
 import { useAppStore } from '../store';
 
-const ProductDetailsPageSkeleton: React.FC = () => (
-  <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 animate-pulse">
-    <div className="h-6 bg-stone-200 rounded w-32 mb-6 sm:mb-8"></div>
-    <div className="lg:grid lg:grid-cols-2 lg:gap-12 bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-stone-200">
-      <div className="space-y-4">
-        <div className="bg-stone-200 rounded-xl" style={{ aspectRatio: '3/4' }}></div>
-        <div className="flex space-x-3 p-1">
-          <div className="w-16 h-16 sm:w-24 sm:h-24 bg-stone-200 rounded-lg"></div>
-          <div className="w-16 h-16 sm:w-24 sm:h-24 bg-stone-200 rounded-lg"></div>
-          <div className="w-16 h-16 sm:w-24 sm:h-24 bg-stone-200 rounded-lg"></div>
+// --- Reusable Components ---
+
+const Accordion: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean; icon?: React.ElementType }> = ({ title, children, defaultOpen = false, icon: Icon }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  return (
+    <div className="border-t border-stone-200">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="w-full py-4 flex justify-between items-center text-left hover:bg-stone-50 transition px-2 -mx-2 rounded-lg group"
+      >
+        <div className="flex items-center gap-3">
+            {Icon && <Icon className="w-5 h-5 text-stone-400 group-hover:text-stone-800 transition-colors" />}
+            <span className="font-medium text-stone-900 text-sm sm:text-base tracking-wide uppercase">{title}</span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'}`}>
+        <div className="text-stone-600 text-sm leading-relaxed px-1">
+          {children}
         </div>
       </div>
-      <div className="mt-6 lg:mt-0 space-y-6">
-        <div className="h-10 bg-stone-200 rounded w-3/4"></div>
-        <div className="h-8 bg-stone-200 rounded w-1/4"></div>
-        <div className="space-y-2 pt-2">
-          <div className="h-4 bg-stone-200 rounded"></div>
-          <div className="h-4 bg-stone-200 rounded"></div>
-          <div className="h-4 bg-stone-200 rounded w-5/6"></div>
+    </div>
+  );
+};
+
+// --- Skeleton Loader ---
+const ProductDetailsPageSkeleton: React.FC = () => (
+  <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-12 animate-pulse">
+    <div className="lg:grid lg:grid-cols-12 lg:gap-12">
+      {/* Gallery Skeleton */}
+      <div className="lg:col-span-7 space-y-4">
+        <div className="aspect-[2/3] bg-stone-200 rounded-xl w-full"></div>
+        <div className="hidden lg:grid grid-cols-2 gap-4">
+             <div className="aspect-[2/3] bg-stone-200 rounded-xl"></div>
+             <div className="aspect-[2/3] bg-stone-200 rounded-xl"></div>
         </div>
-        <div className="space-y-4 pt-4 pb-6 border-b border-stone-200">
-          <div className="h-6 bg-stone-200 rounded w-1/3"></div>
-          <div className="flex flex-wrap gap-3">
-            <div className="h-10 w-20 bg-stone-200 rounded-lg"></div>
-            <div className="h-10 w-20 bg-stone-200 rounded-lg"></div>
-            <div className="h-10 w-20 bg-stone-200 rounded-lg"></div>
-          </div>
-        </div>
-        <div className="space-y-3 py-4">
-          <div className="h-4 bg-stone-200 rounded w-1/2"></div>
-          <div className="h-4 bg-stone-200 rounded w-2/3"></div>
-        </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
-          <div className="h-12 w-32 bg-stone-200 rounded-full"></div>
-          <div className="h-12 flex-1 bg-stone-200 rounded-full"></div>
-        </div>
+      </div>
+      {/* Info Skeleton */}
+      <div className="lg:col-span-5 mt-8 lg:mt-0 space-y-6">
+        <div className="h-4 bg-stone-200 rounded w-24"></div>
+        <div className="h-8 bg-stone-200 rounded w-3/4"></div>
+        <div className="h-6 bg-stone-200 rounded w-32"></div>
+        <div className="h-px bg-stone-200 my-6"></div>
+        <div className="h-10 bg-stone-200 rounded w-full"></div>
+        <div className="h-12 bg-stone-200 rounded w-full mt-4"></div>
       </div>
     </div>
   </main>
@@ -56,53 +65,45 @@ const ProductDetailsPage: React.FC = () => {
     refreshProduct: state.refreshProduct
   }));
 
-  // FETCH FRESH DATA ON MOUNT
-  // Optimized to prevent infinite loops by relying on URL path ID
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+
+  // Swipe state for mobile
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  // Initial Data Fetch
   useEffect(() => {
     const pathParts = window.location.pathname.split('/');
     const pathId = pathParts[pathParts.length - 1];
-    
     if (pathId && pathId !== 'product') {
          refreshProduct(pathId);
     }
   }, [refreshProduct]);
 
-  // Display exactly what is available in product.images. 
+  // Derived Data
   const images = useMemo(() => {
     if (!product || !product.images) return [];
     return product.images.filter(img => img && img !== "");
   }, [product]);
 
   const sizes = product?.sizes || [];
-  const displayColors = product?.colors || [];
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  
   const isFreeSizeOnly = sizes.length === 1 && sizes[0] === 'Free';
-  const [selectedSize, setSelectedSize] = useState<string | null>(isFreeSizeOnly ? 'Free' : null);
-  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
-  // Swipe state
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-
+  // Initialize Defaults
   useEffect(() => {
     if (product) {
         setCurrentImageIndex(0);
-        const productSizes = product.sizes || [];
-        const isFreeSize = productSizes.length === 1 && productSizes[0] === 'Free';
+        setSelectedSize(isFreeSizeOnly ? 'Free' : null);
+        window.scrollTo(0, 0); 
         
-        setSelectedSize(isFreeSize ? 'Free' : null);
-        
+        // Analytics
         const itemIdForAnalytics = product.productId || product.id;
-
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
             event: 'view_item',
-            page_location: window.location.href,
-            page_path: window.location.pathname,
-            page_title: document.title,
             ecommerce: {
                 currency: 'BDT',
                 items: [{
@@ -114,18 +115,14 @@ const ProductDetailsPage: React.FC = () => {
             }
         });
     }
-  }, [product]);
+  }, [product, isFreeSizeOnly]);
 
   const handleNextImage = useCallback(() => {
-    if (images.length > 0) {
-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }
+    if (images.length > 0) setCurrentImageIndex((prev) => (prev + 1) % images.length);
   }, [images.length]);
 
   const handlePrevImage = useCallback(() => {
-    if (images.length > 0) {
-        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-    }
+    if (images.length > 0) setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   }, [images.length]);
 
   // Swipe handlers
@@ -140,221 +137,249 @@ const ProductDetailsPage: React.FC = () => {
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) {
-      handleNextImage();
-    }
-    if (isRightSwipe) {
-      handlePrevImage();
-    }
-  }
-
-  if (loading && !product) {
-    return <ProductDetailsPageSkeleton />;
-  }
-
-  if (!product) {
-    return (
-      <div className="p-10 text-center text-red-500">
-        Error: Product not found. <button onClick={() => navigate('/shop')} className="text-pink-600 underline">Go to Shop</button>
-      </div>
-    );
+    if (isLeftSwipe) handleNextImage();
+    if (isRightSwipe) handlePrevImage();
   }
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-        notify("Please select a size.", "error"); 
+        notify("Please select a size first.", "error"); 
         return;
     }
+    if (!product) return;
+    
     addToCart(product, quantity, selectedSize);
-    navigate('/cart');
+    // Optional: Auto open cart or navigate
+    // navigate('/cart'); 
   };
 
+  const handleShare = async () => {
+      if (navigator.share) {
+          try {
+              await navigator.share({
+                  title: product?.name || 'SAZO Product',
+                  text: `Check out this amazing ${product?.name} on SAZO!`,
+                  url: window.location.href,
+              });
+          } catch (error) {
+              console.log('Error sharing', error);
+          }
+      } else {
+          navigator.clipboard.writeText(window.location.href);
+          notify("Link copied to clipboard!", "success");
+      }
+  };
+
+  if (loading && !product) return <ProductDetailsPageSkeleton />;
+  
+  if (!product) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
+        <p className="text-stone-500 text-lg">Product not found.</p>
+        <button onClick={() => navigate('/shop')} className="text-pink-600 font-medium hover:underline">Continue Shopping</button>
+      </div>
+    );
+  }
+
   const originalPrice = product.price + 200;
-  const selectedImage = images[currentImageIndex] || '';
 
   return (
-    <main className="max-w-7xl mx-auto sm:px-6 lg:px-8 pb-16 sm:pb-12 sm:pt-8 bg-white sm:bg-transparent min-h-screen sm:min-h-fit">
+    <div className="bg-white min-h-screen pb-24 lg:pb-0 relative"> 
       
-      {/* Mobile Sticky Header */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-stone-100 px-4 py-3 sm:hidden flex items-center shadow-sm">
-        <button onClick={() => navigate('/shop')} className="flex items-center text-stone-800 font-medium text-sm">
-             <ChevronLeft className="w-5 h-5 mr-1" /> Back
+      {/* --- Mobile Top Bar --- */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-stone-100 px-4 h-14 lg:hidden flex items-center justify-between">
+        <button onClick={() => navigate('/shop')} className="p-2 -ml-2 text-stone-700 hover:text-pink-600 transition">
+             <ChevronLeft className="w-6 h-6" />
+        </button>
+        <span className="font-bold text-stone-800 text-sm truncate max-w-[60%]">Detail View</span>
+        <button onClick={handleShare} className="p-2 -mr-2 text-stone-700 hover:text-pink-600 transition">
+            <Share2 className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Desktop Back Button */}
-      <button onClick={() => navigate('/shop')} className="hidden sm:flex mb-6 sm:mb-8 items-center text-stone-600 hover:text-stone-900 transition text-sm w-full">
-        <ChevronLeft className="w-4 h-4 mr-1" /> Back to Shop
-      </button>
-
-      {/* Product Content Wrapper */}
-      {/* Changed: Added px-4 for mobile to enforce padding consistent with other pages */}
-      <div className="px-4 pt-6 sm:px-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:gap-12 bg-white sm:rounded-xl sm:shadow-lg sm:border sm:border-stone-200">
+      <main className="max-w-[1400px] mx-auto lg:px-8 lg:pt-8">
         
-        {/* Left Column: Images */}
-        <div className="space-y-4">
-          <div 
-            className="w-full relative bg-stone-100 rounded-xl overflow-hidden group touch-pan-y"
-            // Changed: rounded-xl is now applied on mobile too for consistency ("same hobe")
-            style={{ aspectRatio: '3/4' }}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-          >
-            {images.length > 0 ? (
-                <img 
-                    src={selectedImage} 
-                    alt={product.name} 
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
-                />
-            ) : (
-                 <div className="absolute inset-0 w-full h-full flex items-center justify-center text-stone-400">No Image Available</div>
-            )}
+        {/* --- Breadcrumb (Desktop) --- */}
+        <nav className="hidden lg:flex items-center space-x-2 text-xs text-stone-500 mb-6 uppercase tracking-wider">
+            <span onClick={() => navigate('/')} className="cursor-pointer hover:text-pink-600 transition">Home</span>
+            <ChevronRight className="w-3 h-3" />
+            <span onClick={() => navigate('/shop')} className="cursor-pointer hover:text-pink-600 transition">Shop</span>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-stone-900 font-medium truncate">{product.name}</span>
+        </nav>
 
-            {/* Navigation Arrows (Show only if multiple images) */}
-            {images.length > 1 && (
-                <>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
-                        className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-stone-800 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 active:scale-95 z-20"
-                        aria-label="Previous image"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
-                        className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-stone-800 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 active:scale-95 z-20"
-                         aria-label="Next image"
-                    >
-                        <ChevronRight className="w-6 h-6" />
-                    </button>
-                    
-                    {/* Dots Indicator */}
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-                        {images.map((_, idx) => (
-                            <div 
-                                key={idx} 
-                                className={`h-2 rounded-full transition-all duration-300 shadow-sm ${idx === currentImageIndex ? 'bg-pink-600 w-6' : 'bg-white/70 w-2 hover:bg-white'}`}
-                            />
-                        ))}
-                    </div>
-                </>
-            )}
-          </div>
-          
-          {/* Thumbnails Container */}
-          {images.length > 0 && (
-              <div className="">
-                  <div className="mt-4 border border-stone-200 rounded-xl p-2 sm:p-3 bg-stone-50/50">
-                      <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-                        {images.map((img, index) => (
-                          <div 
-                            key={index}
-                            className={`relative w-20 sm:w-24 aspect-[3/4] flex-shrink-0 rounded-lg cursor-pointer transition-all duration-200 border-2 overflow-hidden ${index === currentImageIndex ? 'border-pink-600 ring-1 ring-pink-600 opacity-100' : 'border-stone-200 hover:border-pink-300 opacity-70 hover:opacity-100'}`}
-                            onClick={() => setCurrentImageIndex(index)}
-                          >
-                            <img
-                                src={img}
-                                alt={`Thumbnail ${index + 1}`}
-                                className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                  </div>
-              </div>
-          )}
-        </div>
-
-        {/* Right Column: Details */}
-        <div className="mt-6 lg:mt-0 space-y-6">
-          <h1 className="text-2xl sm:text-4xl font-bold text-stone-900">{product.name}</h1>
-          <div className="flex items-baseline space-x-3">
-            {product.onSale && <span className="text-lg text-stone-500 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>}
-            <span className="text-3xl font-medium text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
-          </div>
-
-          {/* Product Description Text Box */}
-          <div className="p-4 bg-stone-50 rounded-lg border border-stone-200">
-             <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-line break-words">{product.description}</p>
-          </div>
+        <div className="lg:grid lg:grid-cols-12 lg:gap-12 xl:gap-20 items-start">
             
-          <div className="space-y-4 pt-4 pb-6 border-b border-stone-200">
-             <div className="flex justify-between items-center">
-                <p className="text-base font-bold text-stone-800">Size: <span className="text-pink-600">{selectedSize === 'Free' ? 'Free Size' : (selectedSize || 'Select')}</span></p>
-                {settings.productPagePromoImage && (
-                    <button onClick={() => setIsSizeGuideOpen(true)} className="text-sm text-pink-600 underline hover:text-pink-800 transition">
-                        View size guide
-                    </button>
-                )}
-            </div>
-            {/* Standardized Size Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {sizes.map(size => (
-                <button
-                  key={size}
-                  onClick={() => !isFreeSizeOnly && setSelectedSize(size)}
-                  className={`
-                    h-10 min-w-[3rem] px-3 flex items-center justify-center text-sm font-medium rounded-lg border transition duration-200
-                    ${selectedSize === size ? 'bg-pink-600 text-white border-pink-600 shadow-sm' : 'bg-white text-stone-700 border-stone-300 hover:bg-pink-50 hover:border-pink-400'}
-                    ${isFreeSizeOnly && size !== 'Free' ? 'opacity-50 cursor-not-allowed' : ''}
-                    ${isFreeSizeOnly && size === 'Free' ? 'shadow-lg ring-2 ring-pink-600' : ''}
-                  `}
-                  disabled={isFreeSizeOnly && size !== 'Free'}
+            {/* --- LEFT COLUMN: IMAGES --- */}
+            <div className="lg:col-span-7">
+                
+                {/* Mobile: Horizontal Slider (Swipeable) */}
+                <div 
+                    className="lg:hidden relative bg-stone-100 w-full aspect-[2/3] overflow-hidden group touch-pan-y"
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                 >
-                  {size === 'Free' ? 'Free Size' : size}
-                </button>
-              ))}
-            </div>
-            {isFreeSizeOnly && <p className="text-xs text-green-700 font-semibold mt-2">This item is only available in Free Size.</p>}
-          </div>
+                    {images.length > 0 ? (
+                        <img 
+                            src={images[currentImageIndex]} 
+                            alt={product.name} 
+                            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
+                    )}
+                    
+                    {/* Tags */}
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                         {product.onSale && <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">Sale</span>}
+                         {product.isNewArrival && <span className="bg-stone-900 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">New</span>}
+                    </div>
 
-          <div className="space-y-3 py-4 text-sm text-stone-800">
-            <p><strong>Fabric:</strong> {product.fabric}</p>
-            <p><strong>Colors Available:</strong> {displayColors.join(', ')}</p>
-          </div>
+                    {/* Dots Indicator */}
+                    {images.length > 1 && (
+                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                            {images.map((_, idx) => (
+                                <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'bg-stone-800 scale-125' : 'bg-stone-400/70'}`} />
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
-            <div className="flex items-center border border-stone-300 rounded-full w-full sm:w-auto justify-center">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 text-stone-600 hover:bg-pink-100 rounded-l-full transition active:scale-95">-</button>
-              <span className="w-8 text-center font-bold text-lg text-stone-900">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="p-3 text-stone-600 hover:bg-pink-100 rounded-r-full transition active:scale-95">+</button>
-            </div>
-            <button onClick={handleAddToCart} className="flex-1 bg-pink-600 text-white text-base font-bold px-6 py-3 rounded-full hover:bg-pink-700 transition duration-300 shadow flex items-center justify-center space-x-2 active:scale-95">
-              <ShoppingCart className="w-5 h-5" />
-              <span>Add to Cart</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {isSizeGuideOpen && settings.productPagePromoImage && (
-        <div
-            className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 animate-scaleIn"
-            onClick={() => setIsSizeGuideOpen(false)}
-        >
-            <div
-                className="relative bg-white p-2 sm:p-4 rounded-lg shadow-2xl w-full max-w-3xl"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <button
-                    onClick={() => setIsSizeGuideOpen(false)}
-                    className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-white p-2 rounded-full text-stone-700 hover:text-pink-600 transition shadow-lg z-10"
-                    aria-label="Close size guide"
-                >
-                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-                <div className="overflow-hidden rounded-md">
-                   <img
-                        src={settings.productPagePromoImage}
-                        alt="Size Guide"
-                        className="w-full h-auto object-contain max-h-[85vh]"
-                    />
+                {/* Desktop: Vertical Gallery List */}
+                <div className="hidden lg:flex flex-col gap-4">
+                    {images.map((img, index) => (
+                        <div key={index} className="w-full bg-stone-100 cursor-zoom-in relative group overflow-hidden" style={{ aspectRatio: '2/3' }}>
+                             <img src={img} alt={`${product.name} - ${index}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                             {index === 0 && product.onSale && <span className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider">Sale</span>}
+                             {index === 0 && product.isNewArrival && <span className="absolute top-4 left-4 bg-stone-900 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider ml-14">New</span>}
+                        </div>
+                    ))}
+                    {images.length === 0 && (
+                         <div className="w-full bg-stone-100 flex items-center justify-center text-stone-400" style={{ aspectRatio: '2/3' }}>No Image</div>
+                    )}
                 </div>
             </div>
+
+            {/* --- RIGHT COLUMN: DETAILS (Sticky on Desktop) --- */}
+            <div className="lg:col-span-5 lg:sticky lg:top-24 h-fit mt-6 lg:mt-0 px-4 sm:px-6 lg:px-0">
+                
+                <div className="space-y-4 mb-8">
+                    <h1 className="text-2xl sm:text-3xl font-medium text-stone-900 leading-tight">{product.name}</h1>
+                    <div className="flex items-baseline gap-3">
+                         <span className="text-xl sm:text-2xl font-semibold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
+                         {product.onSale && <span className="text-lg text-stone-400 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>}
+                    </div>
+                </div>
+
+                {/* Size Selector */}
+                <div className="mb-8">
+                    <div className="flex justify-between items-center mb-3">
+                         <span className="text-sm font-semibold text-stone-800 uppercase tracking-wide">Size: <span className="text-stone-500 ml-1">{selectedSize === 'Free' ? 'Free Size' : selectedSize}</span></span>
+                         {settings.productPagePromoImage && (
+                            <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center text-xs font-medium text-stone-500 hover:text-stone-900 underline transition">
+                                <Ruler className="w-3 h-3 mr-1"/> Size Guide
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {sizes.map(size => {
+                             const isSelected = selectedSize === size;
+                             return (
+                                <button
+                                    key={size}
+                                    onClick={() => !isFreeSizeOnly && setSelectedSize(size)}
+                                    disabled={isFreeSizeOnly && size !== 'Free'}
+                                    className={`
+                                        h-12 min-w-[3rem] px-4 flex items-center justify-center text-sm font-medium transition-all duration-200 border
+                                        ${isSelected 
+                                            ? 'bg-stone-900 text-white border-stone-900' 
+                                            : 'bg-white text-stone-700 border-stone-300 hover:border-stone-900'
+                                        }
+                                        ${isFreeSizeOnly && size !== 'Free' ? 'opacity-40 cursor-not-allowed decoration-slice line-through' : ''}
+                                    `}
+                                >
+                                    {size === 'Free' ? 'One Size' : size}
+                                </button>
+                             );
+                        })}
+                    </div>
+                    {isFreeSizeOnly && <p className="text-xs text-stone-500 mt-2 italic">This style comes in a single size designed to fit most.</p>}
+                </div>
+
+                {/* Desktop: Add to Cart Action */}
+                <div className="hidden lg:flex gap-4 mb-10">
+                    <div className="flex items-center border border-stone-300 w-32 justify-between px-3 h-12">
+                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-stone-500 hover:text-stone-900 p-1"><Minus className="w-4 h-4"/></button>
+                        <span className="font-semibold text-stone-900">{quantity}</span>
+                        <button onClick={() => setQuantity(quantity + 1)} className="text-stone-500 hover:text-stone-900 p-1"><Plus className="w-4 h-4"/></button>
+                    </div>
+                    <button 
+                        onClick={handleAddToCart} 
+                        className="flex-1 bg-pink-600 text-white font-bold text-sm uppercase tracking-widest h-12 hover:bg-pink-700 transition duration-300 flex items-center justify-center gap-2"
+                    >
+                        <span>Add to Cart</span>
+                        <ShoppingCart className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Accordions */}
+                <div className="space-y-0">
+                    <Accordion title="Description" defaultOpen>
+                        <p className="mb-2">{product.description}</p>
+                        <ul className="list-disc pl-4 space-y-1 mt-2 text-stone-500">
+                             <li>Premium quality finish</li>
+                             <li>Comfortable fit for all day wear</li>
+                        </ul>
+                    </Accordion>
+                    <Accordion title="Material & Care" icon={ShieldCheck}>
+                        <p><span className="font-semibold text-stone-700">Fabric:</span> {product.fabric}</p>
+                        <p className="mt-2">Machine wash cold with like colors. Do not bleach. Tumble dry low. Cool iron if needed.</p>
+                    </Accordion>
+                    <Accordion title="Delivery & Returns" icon={Truck}>
+                         <p className="mb-2"><strong>Estimated Delivery:</strong> 2-4 Business Days.</p>
+                         <p>We offer a 7-day return policy for unused and unaltered items. Shipping fees are non-refundable.</p>
+                    </Accordion>
+                </div>
+
+            </div>
         </div>
-    )}
-    </main>
+      </main>
+
+      {/* --- Mobile Sticky Bottom Action Bar --- */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-3 lg:hidden z-40 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+         <div className="flex gap-3 max-w-md mx-auto">
+              <div className="flex items-center border border-stone-300 rounded-lg w-28 justify-between px-2 h-12 bg-white">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-stone-500 hover:text-pink-600 p-1"><Minus className="w-4 h-4"/></button>
+                  <span className="font-bold text-stone-900">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="text-stone-500 hover:text-pink-600 p-1"><Plus className="w-4 h-4"/></button>
+              </div>
+              <button 
+                  onClick={handleAddToCart} 
+                  className="flex-1 bg-pink-600 text-white font-bold text-sm uppercase tracking-wide h-12 rounded-lg hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg"
+              >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Add to Cart</span>
+              </button>
+         </div>
+      </div>
+
+       {/* Size Guide Modal */}
+       {isSizeGuideOpen && settings.productPagePromoImage && (
+            <div
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fadeIn"
+                onClick={() => setIsSizeGuideOpen(false)}
+            >
+                <div className="relative max-w-lg w-full bg-white rounded-lg overflow-hidden shadow-2xl animate-scaleIn" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => setIsSizeGuideOpen(false)} className="absolute top-2 right-2 p-2 bg-white/50 rounded-full hover:bg-white text-stone-900">
+                        <ChevronDown className="w-6 h-6 rotate-180" /> {/* Close icon lookalike or X */}
+                    </button>
+                    <img src={settings.productPagePromoImage} alt="Size Guide" className="w-full h-auto" />
+                </div>
+            </div>
+        )}
+
+    </div>
   );
 };
 
