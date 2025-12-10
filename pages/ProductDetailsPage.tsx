@@ -57,25 +57,17 @@ const ProductDetailsPage: React.FC = () => {
   }));
 
   // FETCH FRESH DATA ON MOUNT
-  // This ensures that even if the 'products' list in the store is stale (cached),
-  // we fetch the latest images and details for the currently viewed product.
+  // Optimized to prevent infinite loops by relying on URL path ID
   useEffect(() => {
-    // Priority 1: Use the product ID if already selected
-    if (product?.id) {
-        refreshProduct(product.id);
-    } else {
-        // Priority 2: Extract ID from URL if directly landing on page or refresh
-        const pathParts = window.location.pathname.split('/');
-        // Path should be /product/:id. So ID is last part.
-        const pathId = pathParts[pathParts.length - 1];
-        if (pathId && pathId !== 'product') {
-             refreshProduct(pathId);
-        }
+    const pathParts = window.location.pathname.split('/');
+    const pathId = pathParts[pathParts.length - 1];
+    
+    if (pathId && pathId !== 'product') {
+         refreshProduct(pathId);
     }
-  }, [product?.id, refreshProduct]);
+  }, [refreshProduct]);
 
   // Display exactly what is available in product.images. 
-  // No automatic duplication/repeating logic.
   const images = useMemo(() => {
     if (!product || !product.images) return [];
     return product.images.filter(img => img && img !== "");
@@ -114,7 +106,7 @@ const ProductDetailsPage: React.FC = () => {
             ecommerce: {
                 currency: 'BDT',
                 items: [{
-                    item_id: itemIdForAnalytics, // Dynamic numeric ID
+                    item_id: itemIdForAnalytics,
                     item_name: product.name,
                     item_category: product.category,
                     price: product.price
@@ -265,7 +257,11 @@ const ProductDetailsPage: React.FC = () => {
             {product.onSale && <span className="text-lg text-stone-500 line-through">৳{originalPrice.toLocaleString('en-IN')}</span>}
             <span className="text-3xl font-medium text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
           </div>
-          <p className="text-sm text-stone-700 leading-relaxed">{product.description}</p>
+
+          {/* Product Description Text Box */}
+          <div className="p-4 bg-stone-50 rounded-lg border border-stone-200">
+             <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-line">{product.description}</p>
+          </div>
             
           <div className="space-y-4 pt-4 pb-6 border-b border-stone-200">
              <div className="flex justify-between items-center">
@@ -276,12 +272,18 @@ const ProductDetailsPage: React.FC = () => {
                     </button>
                 )}
             </div>
+            {/* Standardized Size Buttons */}
             <div className="flex flex-wrap gap-3">
               {sizes.map(size => (
                 <button
                   key={size}
                   onClick={() => !isFreeSizeOnly && setSelectedSize(size)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg border transition duration-200 ${selectedSize === size ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-stone-700 border-stone-300 hover:bg-pink-50 hover:border-pink-400'} ${isFreeSizeOnly && size !== 'Free' ? 'opacity-50 cursor-not-allowed' : ''} ${isFreeSizeOnly && size === 'Free' ? 'shadow-lg ring-2 ring-pink-600' : ''}`}
+                  className={`
+                    h-10 min-w-[3rem] px-3 flex items-center justify-center text-sm font-medium rounded-lg border transition duration-200
+                    ${selectedSize === size ? 'bg-pink-600 text-white border-pink-600 shadow-sm' : 'bg-white text-stone-700 border-stone-300 hover:bg-pink-50 hover:border-pink-400'}
+                    ${isFreeSizeOnly && size !== 'Free' ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${isFreeSizeOnly && size === 'Free' ? 'shadow-lg ring-2 ring-pink-600' : ''}
+                  `}
                   disabled={isFreeSizeOnly && size !== 'Free'}
                 >
                   {size === 'Free' ? 'Free Size' : size}
