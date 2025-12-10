@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import ProductCard from '../components/ProductCard';
 import { Search, ChevronDown, SlidersHorizontal, X } from 'lucide-react';
@@ -10,7 +9,7 @@ const PRODUCTS_PER_PAGE = 12;
 const ProductCardSkeleton: React.FC = () => (
   <div className="bg-white rounded-lg border border-stone-200 overflow-hidden shadow-lg w-full h-full flex flex-col">
     <div className="aspect-[3/4] bg-stone-200 w-full animate-pulse" />
-    <div className="p-2 sm:p-4 space-y-1.5 flex flex-col flex-1">
+    <div className="p-3 sm:p-4 space-y-1.5 flex flex-col flex-1">
       {/* Title Bar - Matches text-sm sm:text-lg */}
       <div className="h-5 sm:h-7 bg-stone-200 rounded w-full animate-pulse" />
       {/* Fabric Bar - Matches text-xs */}
@@ -165,8 +164,7 @@ const ShopPage: React.FC = () => {
   const showSkeletons = isInitialLoading && products.length === 0;
 
   return (
-    // Adjusted padding (px-[0.7rem]) on mobile for specific spacing request
-    <main className="max-w-screen-2xl mx-auto px-[0.7rem] sm:px-6 lg:px-8 pt-8 sm:pt-12">
+    <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
       <div className="text-center mb-8 lg:mt-8 lg:mb-12">
         <h2 className="text-3xl sm:text-4xl font-bold text-stone-800">SAZO Styles</h2>
       </div>
@@ -214,8 +212,7 @@ const ShopPage: React.FC = () => {
 
         <section className="lg:col-span-3">
           {showSkeletons ? (
-            // Changed gap to gap-[0.7rem] on mobile
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-[0.7rem] sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {[...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)}
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -224,10 +221,9 @@ const ShopPage: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Changed gap to gap-[0.7rem] on mobile */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-[0.7rem] sm:gap-6">
-                {currentProducts.map((p, index) => (
-                  <ProductCard key={p.id} product={p} priority={index < 6} />
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {currentProducts.map(p => (
+                  <ProductCard key={p.id} product={p} />
                 ))}
               </div>
               {totalPages > 1 && (
