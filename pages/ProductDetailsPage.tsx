@@ -69,6 +69,9 @@ const ProductDetailsPage: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isPaused, setIsPaused] = useState(false); // State to pause auto-slide on interaction
+  
+  // New state to track explicit data fetching for this page
+  const [isFetching, setIsFetching] = useState(true);
 
   // Swipe state for mobile
   const [touchStart, setTouchStart] = useState(0);
@@ -76,11 +79,20 @@ const ProductDetailsPage: React.FC = () => {
 
   // Initial Data Fetch
   useEffect(() => {
-    const pathParts = window.location.pathname.split('/');
-    const pathId = pathParts[pathParts.length - 1];
-    if (pathId && pathId !== 'product') {
-         refreshProduct(pathId);
-    }
+    const fetchProductData = async () => {
+        const pathParts = window.location.pathname.split('/');
+        const pathId = pathParts[pathParts.length - 1];
+        
+        if (pathId && pathId !== 'product') {
+             // If we already have the product in state (e.g. from nav), we might still want to refresh,
+             // but we can stop the loading spinner immediately if needed. 
+             // Ideally, we await the refresh to ensure we have the latest data before deciding "Not Found".
+             await refreshProduct(pathId);
+        }
+        setIsFetching(false);
+    };
+
+    fetchProductData();
   }, [refreshProduct]);
 
   // Derived Data
@@ -195,7 +207,10 @@ const ProductDetailsPage: React.FC = () => {
       }
   };
 
-  if (loading && !product) return <ProductDetailsPageSkeleton />;
+  // Improved Loading Condition:
+  // Shows skeleton if global loading is true OR if we are explicitly fetching data for this page.
+  // This prevents the "Not Found" flash.
+  if ((loading || isFetching) && !product) return <ProductDetailsPageSkeleton />;
   
   if (!product) {
     return (
@@ -503,7 +518,7 @@ const ProductDetailsPage: React.FC = () => {
                 onClick={() => setIsSizeGuideOpen(false)}
             >
                 {/* Increased max-width from max-w-lg to max-w-4xl for larger image */}
-                <div className="relative max-w-4xl w-full bg-white shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                <div className="relative max-w-4xl w-full bg-white rounded-xl shadow-2xl animate-scaleIn flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                     
                     {/* Header with Title and Close 'X' */}
                     <div className="flex justify-between items-center p-4 border-b border-stone-100">
