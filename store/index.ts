@@ -32,17 +32,8 @@ const DEFAULT_SETTINGS: AppSettings = {
     homepageNewArrivalsCount: 4, homepageTrendingCount: 4
 };
 
-// Fallback Mock Data to ensure UI works even if backend fails
-const MOCK_PRODUCTS_DATA: Product[] = [
-  { id: '101', productId: '101', name: "Gulmohar Lawn Suit", category: "Cotton", price: 3500, description: "Pure cotton lawn three-piece with exquisite embroidery and soft dupatta. Ideal for daily wear.", fabric: "Lawn Cotton", colors: ["Pastel Pink", "Beige", "Mint"], sizes: ["S", "M", "L", "XL", "Free"], isNewArrival: true, isTrending: false, onSale: false, images: ["https://picsum.photos/seed/gulmohar/400/500", "https://picsum.photos/seed/gulmohar2/400/500", "https://picsum.photos/seed/gulmohar3/400/500"], displayOrder: 1000 },
-  { id: '102', productId: '102', name: "Shalimar Silk Ensemble", category: "Silk", price: 6200, description: "Elegant raw silk suit with delicate zari work. Perfect for evening occasions.", fabric: "Raw Silk", colors: ["Maroon", "Gold"], sizes: ["36", "38", "40", "42"], isNewArrival: true, isTrending: true, onSale: false, images: ["https://picsum.photos/seed/shalimar/400/500", "https://picsum.photos/seed/shalimar2/400/500", "https://picsum.photos/seed/shalimar3/400/500"], displayOrder: 1000 },
-  { id: '103', productId: '103', name: "Party Princess Georgette", category: "Party Wear", price: 7800, description: "Heavy georgette suit with stone embellishments. Ready for any celebration.", fabric: "Georgette", colors: ["Royal Blue", "Crimson"], sizes: ["Free"], isNewArrival: false, isTrending: true, onSale: true, images: ["https://picsum.photos/seed/georgette/400/500", "https://picsum.photos/seed/georgette2/400/500", "https://picsum.photos/seed/georgette3/400/500"], displayOrder: 1000 },
-  { id: '104', productId: '104', name: "Everyday Beige Cotton", category: "Cotton", price: 2800, description: "Simple yet stylish cotton suit for comfortable daily use.", fabric: "Cotton", colors: ["Beige", "Lavender"], sizes: ["38", "40", "42", "44", "46"], isNewArrival: false, isTrending: false, onSale: true, images: ["https://picsum.photos/seed/beige/400/500", "https://picsum.photos/seed/beige2/400/500", "https://picsum.photos/seed/beige3/400/500"], displayOrder: 1000 },
-  { id: '105', productId: '105', name: "Mogra Chiffon", category: "Party Wear", price: 5900, description: "Flowy chiffon with printed motifs and lace detailing.", fabric: "Chiffon", colors: ["White", "Yellow"], sizes: ["S", "M", "L"], isNewArrival: false, isTrending: true, onSale: false, images: ["https://picsum.photos/seed/mogra/400/500", "https://picsum.photos/seed/mogra2/400/500", "https://picsum.photos/seed/mogra3/400/500"], displayOrder: 1000 },
-  { id: '106', productId: '106', name: "Sapphire Lawn Print", category: "Cotton", price: 3200, description: "Vibrant printed lawn suit with comfortable cotton dupatta.", fabric: "Lawn Cotton", colors: ["Blue", "Green", "White"], sizes: ["36", "38", "40", "42", "44"], isNewArrival: true, isTrending: false, onSale: false, images: ["https://picsum.photos/seed/sapphire/400/500", "https://picsum.photos/seed/sapphire2/400/500", "https://picsum.photos/seed/sapphire3/400/500"], displayOrder: 1000 },
-  { id: '107', productId: '107', name: "Emerald Viscose", category: "Silk", price: 5500, description: "Smooth viscose silk blend with minimalist golden detailing.", fabric: "Viscose Silk", colors: ["Emerald", "Black"], sizes: ["M", "L", "XL"], isNewArrival: true, isTrending: true, onSale: false, images: ["https://picsum.photos/seed/emerald/400/500", "https://picsum.photos/seed/emerald2/400/500", "https://picsum.photos/seed/emerald3/400/500"], displayOrder: 1000 },
-  { id: '108', productId: '108', name: "Maharani Velvet", category: "Party Wear", price: 9500, description: "Luxurious velvet three-piece with heavy sequin work. Ultimate festive attire.", fabric: "Velvet", colors: ["Navy", "Wine Red"], sizes: ["38", "40", "42", "44", "Free"], isNewArrival: true, isTrending: true, onSale: true, images: ["https://picsum.photos/seed/maharani/400/500", "https://picsum.photos/seed/maharani2/400/500", "https://picsum.photos/seed/maharani3/400/500"], displayOrder: 1000 },
-];
+// Cleared Mock Data to prevent confusion with real DB data
+const MOCK_PRODUCTS_DATA: Product[] = [];
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -220,12 +211,29 @@ export const useAppStore = create<AppState>()(
                 if (!res.ok) return;
                 const freshProduct = await res.json();
                 
-                set(state => ({
-                    // Update in list if exists
-                    products: state.products.map(p => p.id === freshProduct.id ? freshProduct : p),
-                    // Update selected if matching (forces re-render of details page with fresh images)
-                    selectedProduct: state.selectedProduct?.id === freshProduct.id ? freshProduct : state.selectedProduct
-                }));
+                set(state => {
+                    // Robust match check to handle potential ID format differences
+                    const isMatch = (p: Product) => 
+                        p.id === freshProduct.id || 
+                        p.productId === freshProduct.productId || 
+                        String(p.id) === String(freshProduct.productId) || 
+                        String(p.productId) === String(freshProduct.id);
+
+                    // Update product in the list if it exists
+                    const updatedProducts = state.products.map(p => isMatch(p) ? freshProduct : p);
+                    
+                    // Always update selectedProduct if we fetched a fresh one and it matches what was requested
+                    // or if nothing was selected (first load)
+                    let newSelected = state.selectedProduct;
+                    if (!newSelected || isMatch(newSelected)) {
+                        newSelected = freshProduct;
+                    }
+
+                    return {
+                        products: updatedProducts,
+                        selectedProduct: newSelected
+                    };
+                });
             } catch (e) {
                 console.error("Failed to refresh product", e);
             }
