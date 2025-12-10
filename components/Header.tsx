@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, memo } from 'react';
-import { ShoppingCart, Menu, X, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, Menu, X, ChevronRight, ShoppingBag, Home, Grid, Phone, FileText } from 'lucide-react';
 import { useAppStore } from '../store';
 
 const Header: React.FC = () => {
@@ -41,10 +41,10 @@ const Header: React.FC = () => {
   };
   
   const menuItems = [
-      { label: 'Home', path: '/' },
-      { label: 'Shop All', path: '/shop' },
-      { label: 'Contact Us', path: '/contact' },
-      { label: 'Privacy Policy', path: '/policy' },
+      { label: 'Home', path: '/', icon: Home },
+      { label: 'Shop All', path: '/shop', icon: Grid },
+      { label: 'Contact Us', path: '/contact', icon: Phone },
+      { label: 'Privacy Policy', path: '/policy', icon: FileText },
   ];
 
   return (
@@ -80,51 +80,62 @@ const Header: React.FC = () => {
 
       {/* Mobile Drawer Menu Overlay */}
       <div 
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 md:hidden ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 md:hidden ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={() => setIsMenuOpen(false)}
       />
 
       {/* Mobile Drawer Menu Content */}
       <div 
-          className={`fixed top-0 left-0 h-full w-[80%] max-w-[300px] bg-white z-50 transform transition-transform duration-300 ease-in-out md:hidden shadow-2xl flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`fixed top-0 left-0 h-full w-[85%] max-w-[320px] bg-white z-50 transform transition-transform duration-300 ease-in-out md:hidden shadow-2xl flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-          {/* Drawer Header */}
-          <div className="flex justify-between items-center p-6 pb-2">
-              <h2 className="text-xl font-bold text-stone-900 tracking-widest uppercase" onClick={() => handleNavClick('/')}>Menu</h2>
-              <button onClick={() => setIsMenuOpen(false)} className="p-2 -mr-2 text-stone-500 hover:text-pink-600 transition">
+          {/* Drawer Header with Logo */}
+          <div className="flex justify-between items-center p-6 border-b border-stone-100">
+              <h2 className="sazo-logo text-3xl font-bold text-stone-800 tracking-wider" onClick={() => handleNavClick('/')}>SAZO</h2>
+              <button onClick={() => setIsMenuOpen(false)} className="p-2 -mr-2 text-stone-500 hover:text-pink-600 transition rounded-full hover:bg-stone-50">
                   <X className="w-6 h-6" />
               </button>
           </div>
 
-          {/* Minimalist Drawer Links */}
-          <nav className="flex-1 flex flex-col px-6 py-8 space-y-6 overflow-y-auto">
+          {/* Professional Drawer Links with Icons */}
+          <nav className="flex-1 flex flex-col px-4 py-6 space-y-2 overflow-y-auto">
               {menuItems.map((item) => {
                   const isActive = path === item.path;
+                  const Icon = item.icon;
                   return (
                       <button 
                           key={item.path}
                           onClick={() => handleNavClick(item.path)} 
-                          className={`group flex items-center justify-between text-left text-lg font-medium transition-colors duration-200 ${isActive ? 'text-pink-600' : 'text-stone-800 hover:text-pink-600'}`}
+                          className={`group flex items-center justify-between w-full p-4 rounded-xl transition-all duration-200 ${
+                              isActive 
+                                ? 'bg-pink-50 text-pink-700' 
+                                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                          }`}
                       >
-                          <span>{item.label}</span>
-                          {/* Subtle arrow only on hover or active */}
-                          <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'}`} />
+                          <div className="flex items-center space-x-4">
+                              <Icon className={`w-5 h-5 ${isActive ? 'text-pink-600' : 'text-stone-400 group-hover:text-stone-600'}`} />
+                              <span className={`font-semibold text-base tracking-wide ${isActive ? 'text-pink-700' : ''}`}>{item.label}</span>
+                          </div>
+                          <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${
+                              isActive 
+                                ? 'text-pink-400 translate-x-0' 
+                                : 'text-stone-300 group-hover:text-stone-400 group-hover:translate-x-1'
+                          }`} />
                       </button>
                   )
               })}
           </nav>
 
-          {/* Elegant Footer */}
-          <div className="p-6 border-t border-stone-100 bg-stone-50/50">
+          {/* Drawer Footer with CTA */}
+          <div className="p-6 border-t border-stone-100 bg-stone-50/30">
                <button 
                   onClick={() => handleNavClick('/shop')}
-                  className="w-full bg-stone-900 text-white font-medium py-3.5 rounded-lg hover:bg-stone-800 transition active:scale-95 shadow-md flex items-center justify-center space-x-2 text-sm tracking-wide"
+                  className="w-full bg-stone-900 text-white font-bold py-4 rounded-xl hover:bg-stone-800 transition active:scale-95 shadow-lg flex items-center justify-center space-x-3 text-sm uppercase tracking-widest"
                >
-                  <ShoppingBag className="w-4 h-4" />
+                  <ShoppingBag className="w-5 h-5" />
                   <span>Start Shopping</span>
                </button>
-               <div className="mt-8 text-center space-y-1">
-                  <p className="text-[10px] text-stone-400 uppercase tracking-widest">Designed for Elegance</p>
+               <div className="mt-6 text-center">
+                  <p className="text-[10px] text-stone-400 font-medium uppercase tracking-[0.2em]">Designed for Elegance</p>
                </div>
           </div>
       </div>
