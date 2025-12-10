@@ -112,8 +112,8 @@ const HomePage: React.FC = () => {
     <>
       <HeroSlider />
 
-      {/* Reduced padding (px-2) on mobile for wider cards */}
-      <main className="max-w-[1440px] mx-auto px-2 sm:px-6 lg:px-8 pt-16 sm:pt-24">
+      {/* Adjusted padding (px-[0.7rem]) on mobile for specific spacing request */}
+      <main className="max-w-[1440px] mx-auto px-[0.7rem] sm:px-6 lg:px-8 pt-16 sm:pt-24">
         <section className="mb-16 sm:mb-24">
           <SectionTitle title="New Arrivals" />
           {/* Reduced gap (gap-2) on mobile for wider cards */}
