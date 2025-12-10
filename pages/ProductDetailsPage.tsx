@@ -196,7 +196,7 @@ const ProductDetailsPage: React.FC = () => {
         <div className="space-y-4">
           <div 
             className="w-full relative bg-stone-100 sm:rounded-xl overflow-hidden group touch-pan-y"
-            // Ensure 3:4 Aspect Ratio on all devices
+            // Ensure 3:4 Aspect Ratio on all devices for consistency
             style={{ aspectRatio: '3/4' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
