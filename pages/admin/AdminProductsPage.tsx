@@ -224,7 +224,12 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
                                         <label className="text-sm font-medium text-gray-700 block mb-1">Image 1 (Primary / Front)</label>
                                         <div className="flex items-center gap-4">
                                             {formData.image1 && (
-                                                <img src={formData.image1} alt="Preview 1" className="w-12 h-12 object-cover rounded-lg flex-shrink-0"/>
+                                                <div className="relative">
+                                                    <img src={formData.image1} alt="Preview 1" className="w-12 h-12 object-cover rounded-lg flex-shrink-0"/>
+                                                    <button type="button" onClick={() => handleImageChange('image1', '')} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 shadow-sm" title="Remove Image">
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
                                             )}
                                             <ImageInput 
                                                 currentImage={formData.image1}
@@ -237,7 +242,12 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
                                         <label className="text-sm font-medium text-gray-700 block mb-1">Image 2 (Side / Detail)</label>
                                         <div className="flex items-center gap-4">
                                             {formData.image2 && (
-                                                <img src={formData.image2} alt="Preview 2" className="w-12 h-12 object-cover rounded-lg flex-shrink-0"/>
+                                                <div className="relative">
+                                                    <img src={formData.image2} alt="Preview 2" className="w-12 h-12 object-cover rounded-lg flex-shrink-0"/>
+                                                    <button type="button" onClick={() => handleImageChange('image2', '')} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 shadow-sm" title="Remove Image">
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
                                             )}
                                             <ImageInput 
                                                 currentImage={formData.image2}
@@ -250,7 +260,12 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
                                         <label className="text-sm font-medium text-gray-700 block mb-1">Image 3 (Back / Style)</label>
                                         <div className="flex items-center gap-4">
                                             {formData.image3 && (
-                                                <img src={formData.image3} alt="Preview 3" className="w-12 h-12 object-cover rounded-lg flex-shrink-0"/>
+                                                <div className="relative">
+                                                    <img src={formData.image3} alt="Preview 3" className="w-12 h-12 object-cover rounded-lg flex-shrink-0"/>
+                                                    <button type="button" onClick={() => handleImageChange('image3', '')} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 shadow-sm" title="Remove Image">
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
                                             )}
                                             <ImageInput 
                                                 currentImage={formData.image3}
