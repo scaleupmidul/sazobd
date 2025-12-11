@@ -44,10 +44,13 @@ const TrustBadge: React.FC<{ icon: React.ElementType, title: string, sub: string
 
 // --- Skeleton Loader ---
 const ProductDetailsPageSkeleton: React.FC = () => (
-  <main className="max-w-[1280px] mx-auto px-4 lg:px-8 pt-6 lg:pt-12 animate-pulse">
+  <main className="max-w-[1280px] mx-auto px-4 lg:px-8 pt-6 lg:pt-12 animate-pulse min-h-screen">
     <div className="lg:grid lg:grid-cols-2 lg:gap-16">
       <div className="w-full">
-        <div className="aspect-[3/4] bg-stone-200 w-full rounded-2xl mb-4"></div>
+        {/* Darker background for better visibility against white page */}
+        <div className="aspect-[3/4] bg-stone-300 w-full rounded-2xl mb-4 relative overflow-hidden">
+             <div className="absolute inset-0 bg-gradient-to-r from-stone-300 via-stone-200 to-stone-300 animate-shimmer" style={{ backgroundSize: '200% 100%' }}></div>
+        </div>
         <div className="hidden lg:flex gap-4">
              <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
              <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
@@ -55,7 +58,7 @@ const ProductDetailsPageSkeleton: React.FC = () => (
         </div>
       </div>
       <div className="mt-8 lg:mt-0 space-y-6">
-        <div className="h-8 bg-stone-200 rounded w-3/4"></div>
+        <div className="h-8 bg-stone-300 rounded w-3/4"></div>
         <div className="h-6 bg-stone-200 rounded w-1/4"></div>
         <div className="space-y-3 pt-6">
             <div className="h-12 bg-stone-200 rounded w-full"></div>
@@ -89,6 +92,7 @@ const ProductDetailsPage: React.FC = () => {
   const [touchEnd, setTouchEnd] = useState(0);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchProductData = async () => {
         const pathParts = window.location.pathname.split('/');
         const pathId = pathParts[pathParts.length - 1];
@@ -96,10 +100,11 @@ const ProductDetailsPage: React.FC = () => {
         if (pathId && pathId !== 'product') {
              await refreshProduct(pathId);
         }
-        setIsFetching(false);
+        if (isMounted) setIsFetching(false);
     };
 
     fetchProductData();
+    return () => { isMounted = false; };
   }, [refreshProduct]);
 
   const images = useMemo(() => {
