@@ -10,7 +10,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) => {
-    const [isImageLoaded, setIsImageLoaded] = useState(false);
+    // We removed isImageLoaded state to allow progressive rendering without hiding the image
     const regularPrice = product.regularPrice || product.price + 200; // Fallback only if not set in DB yet
     const navigate = useAppStore(state => state.navigate);
 
@@ -26,18 +26,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
                 className="relative w-full bg-stone-200 flex-shrink-0"
                 style={{ aspectRatio: '3/4' }}
             >
-                {!isImageLoaded && <div className="absolute inset-0 bg-stone-200 animate-pulse"></div>}
+                {/* 
+                   OPTIMIZATION: Removed the conditional skeleton overlay and opacity transition.
+                   This allows the browser to render the image progressively as it downloads,
+                   giving immediate visual feedback ("Age img load") instead of waiting for full load.
+                */}
                 <img
                     src={product.images[0]}
                     alt={product.name}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    className="absolute inset-0 w-full h-full object-cover"
                     // Optimized loading: Only use eager for top items (priority=true), else lazy
                     loading={priority ? "eager" : "lazy"}
                     // @ts-ignore
                     fetchPriority={priority ? "high" : "auto"}
                     decoding="async"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    onLoad={() => setIsImageLoaded(true)}
                 />
                 <div className="absolute top-3 left-3 flex flex-col items-start space-y-1.5 z-10">
                     {product.isNewArrival && (
