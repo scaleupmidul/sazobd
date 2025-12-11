@@ -265,6 +265,15 @@ const App: React.FC = () => {
           }
           .animate-fadeInUp { animation: fadeInUp 0.6s ease-out both; }
 
+          /* Premium Notification Animation */
+          @keyframes notificationSlide {
+            0% { opacity: 0; transform: translate(-50%, -20px) scale(0.95); }
+            100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+          }
+          .animate-notification {
+            animation: notificationSlide 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+          }
+
           .text-shadow { text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
           @keyframes pulse-whatsapp {
