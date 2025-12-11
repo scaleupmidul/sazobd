@@ -236,7 +236,7 @@ const ProductDetailsPage: React.FC = () => {
   );
 
   return (
-    <div className="bg-[#FEF5F5] min-h-screen pb-28 lg:pb-12 relative"> 
+    <div className="bg-white min-h-screen pb-28 lg:pb-12 relative"> 
       
       {/* --- Mobile Top Bar --- */}
       <div className="fixed top-0 left-0 right-0 z-30 lg:hidden flex items-center justify-between p-4 pointer-events-none">
