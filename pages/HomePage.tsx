@@ -108,6 +108,10 @@ const HomePage: React.FC = () => {
   const newArrivalsDisplay = allNewArrivals.slice(0, homepageNewArrivalsCount || 4);
   const trendingProductsDisplay = allTrendingProducts.slice(0, homepageTrendingCount || 4);
 
+  // OPTIMIZATION: Only show skeletons if we have NO products data at all.
+  // If we have cached products, show them immediately while background fetch updates them.
+  const showSkeletons = loading && (!products || products.length === 0);
+
   return (
     <>
       <HeroSlider />
@@ -118,7 +122,7 @@ const HomePage: React.FC = () => {
           <SectionTitle title="New Arrivals" />
           {/* Reduced gap-4 to gap-2 on mobile */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
-            {loading ? (
+            {showSkeletons ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
             ) : (
@@ -144,7 +148,7 @@ const HomePage: React.FC = () => {
           <SectionTitle title="Trending Products" />
           {/* Reduced gap-4 to gap-2 on mobile */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
-            {loading ? (
+            {showSkeletons ? (
                // Show 4 full-size skeletons during loading
                [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
             ) : (
