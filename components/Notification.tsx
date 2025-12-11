@@ -19,7 +19,7 @@ const Notification: React.FC<NotificationProps> = ({ notification }) => {
       label: 'Success'
     },
     error: {
-      icon: AlertCircle, // Changed to Circle to match premium look
+      icon: AlertCircle, // Circle icon for error
       bgClass: 'bg-rose-50', // Soft premium red background
       iconClass: 'text-rose-600',
       labelClass: 'text-rose-700',
@@ -37,23 +37,23 @@ const Notification: React.FC<NotificationProps> = ({ notification }) => {
   const { icon: Icon, bgClass, iconClass, labelClass, label } = config[notification.type];
 
   return (
-    <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] animate-notification w-auto max-w-[90vw] sm:max-w-md">
-      <div className="flex items-center gap-3.5 pl-2 pr-6 py-2.5 bg-white/95 backdrop-blur-xl border border-stone-100 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/5">
+    <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] animate-notification w-[92vw] max-w-[400px]">
+      <div className="flex items-start gap-4 p-4 bg-white/95 backdrop-blur-xl border border-stone-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/5">
         
         {/* Icon Circle */}
-        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bgClass} ${iconClass} flex-shrink-0 shadow-sm`}>
+        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bgClass} ${iconClass} flex-shrink-0 shadow-sm mt-0.5`}>
           <Icon size={20} strokeWidth={2.5} />
         </div>
 
         {/* Text Content */}
-        <div className="flex flex-col justify-center min-w-[120px]">
+        <div className="flex flex-col justify-center pt-0.5">
            {/* Label (Success/Error) - Uppercase & Bold */}
-           <span className={`text-[10px] font-extrabold uppercase tracking-[0.15em] leading-none mb-0.5 ${labelClass}`}>
+           <span className={`text-[11px] font-extrabold uppercase tracking-widest leading-none mb-1.5 ${labelClass}`}>
              {label}
            </span>
            
            {/* Message - Clean sans-serif */}
-           <span className="text-[13px] font-semibold text-stone-700 leading-tight">
+           <span className="text-[13px] font-semibold text-stone-700 leading-snug">
              {notification.message}
            </span>
         </div>
