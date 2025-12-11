@@ -54,7 +54,7 @@ const Header: React.FC = () => {
           {/* LOGO with Smooth Gradient Animation */}
           <h1 
             onClick={() => handleNavClick('/')} 
-            className="sazo-logo text-2xl sm:text-3xl lg:text-4xl font-extrabold cursor-pointer tracking-wider lg:tracking-[2px] sazo-logo-gradient hover:scale-105 transition-transform duration-300"
+            className="sazo-logo text-3xl sm:text-4xl lg:text-5xl font-extrabold cursor-pointer tracking-wider lg:tracking-[2px] sazo-logo-gradient hover:scale-105 transition-transform duration-300"
           >
             SAZO
           </h1>
@@ -76,7 +76,7 @@ const Header: React.FC = () => {
               )}
             </button>
             <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2 rounded-full text-stone-700 hover:bg-pink-100 transition duration-300 active:scale-95">
-              <Menu className="w-6 h-6" />
+              <Menu className="w-8 h-8" />
             </button>
           </div>
         </div>
