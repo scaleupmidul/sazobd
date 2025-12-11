@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Check, AlertOctagon, Info } from 'lucide-react';
 import { Notification as NotificationType } from '../types';
 
 interface NotificationProps {
@@ -9,15 +10,52 @@ interface NotificationProps {
 const Notification: React.FC<NotificationProps> = ({ notification }) => {
   if (!notification) return null;
 
-  // Determine icon based on type
-  let Icon = CheckCircle;
-  if (notification.type === 'error') Icon = AlertCircle;
-  if (notification.type === 'info') Icon = Info;
+  const config = {
+    success: {
+      icon: Check,
+      textClass: 'text-emerald-600',
+      bgClass: 'bg-emerald-100',
+      iconClass: 'text-emerald-700',
+      label: 'Success'
+    },
+    error: {
+      icon: AlertOctagon,
+      textClass: 'text-rose-600',
+      bgClass: 'bg-rose-100',
+      iconClass: 'text-rose-700',
+      label: 'Error'
+    },
+    info: {
+      icon: Info,
+      textClass: 'text-blue-600',
+      bgClass: 'bg-blue-100',
+      iconClass: 'text-blue-700',
+      label: 'Information'
+    }
+  };
+
+  const { icon: Icon, textClass, bgClass, iconClass, label } = config[notification.type];
 
   return (
-    <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] flex items-center px-4 py-3 rounded-lg border shadow-lg bg-pink-100 border-pink-400 text-pink-800 min-w-[300px] max-w-[90vw] animate-fadeIn transition-all duration-300">
-      <Icon className="w-5 h-5 mr-3 flex-shrink-0 text-pink-600" />
-      <span className="font-medium text-sm sm:text-base">{notification.message}</span>
+    <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] animate-notification">
+      <div className="flex items-center p-2 pr-6 bg-white/95 backdrop-blur-xl border border-stone-200/60 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+        
+        {/* Circular Icon Wrapper */}
+        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bgClass} ${iconClass} shadow-inner flex-shrink-0`}>
+          <Icon size={20} strokeWidth={2.5} />
+        </div>
+
+        {/* Text Content */}
+        <div className="ml-4 flex flex-col justify-center min-w-[200px] max-w-[300px]">
+           <span className={`text-[10px] font-bold uppercase tracking-widest ${textClass} opacity-90 leading-tight mb-0.5`}>
+             {label}
+           </span>
+           <span className="text-sm font-semibold text-stone-800 leading-snug line-clamp-2">
+             {notification.message}
+           </span>
+        </div>
+
+      </div>
     </div>
   );
 };
