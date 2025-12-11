@@ -435,31 +435,35 @@ const ProductDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Desktop Actions */}
-                <div className="hidden lg:flex flex-col gap-4 mb-10">
-                    <div className="flex gap-4">
-                        {/* Desktop Quantity */}
-                         <div className="flex items-center border border-stone-200 rounded-xl w-32 justify-between px-2 h-14 bg-white">
+                <div className="hidden lg:block mb-10">
+                     {/* Row 1: Quantity */}
+                     <div className="flex items-center gap-4 mb-4">
+                        <span className="text-sm font-bold text-stone-700">Quantity</span>
+                        <div className="flex items-center border border-stone-200 rounded-lg w-32 justify-between px-2 h-11 bg-white">
                             <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center text-stone-500 hover:text-stone-900 transition"><Minus className="w-4 h-4"/></button>
                             <span className="font-bold text-stone-900 text-lg">{quantity}</span>
                             <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center text-stone-500 hover:text-stone-900 transition"><Plus className="w-4 h-4"/></button>
                         </div>
-                        
+                    </div>
+
+                    {/* Row 2: Buttons Side-by-Side */}
+                    <div className="flex gap-4">
                         <button 
                             onClick={handleAddToCart} 
-                            className="flex-1 bg-white border-2 border-stone-900 text-stone-900 font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-stone-50 transition duration-300 flex items-center justify-center gap-2"
+                            className="flex-1 bg-white border-2 border-stone-200 text-stone-900 font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-stone-50 transition duration-300 flex items-center justify-center gap-2"
                         >
                             <ShoppingCart className="w-4 h-4" />
                             <span>Add to Cart</span>
                         </button>
-                    </div>
 
-                    <button 
-                        onClick={handleBuyNow} 
-                        className="w-full bg-pink-600 text-white font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-pink-700 transition duration-300 flex items-center justify-center gap-2 shadow-xl shadow-pink-200 hover:shadow-2xl transform hover:-translate-y-0.5"
-                    >
-                        <span>Buy It Now</span>
-                        <ArrowRight className="w-5 h-5" />
-                    </button>
+                        <button 
+                            onClick={handleBuyNow} 
+                            className="flex-1 bg-pink-600 text-white font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-pink-700 transition duration-300 flex items-center justify-center gap-2 shadow-xl shadow-pink-200 hover:shadow-2xl transform hover:-translate-y-0.5"
+                        >
+                            <span>Buy It Now</span>
+                            <ArrowRight className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
                 
                 {/* Trust Badges (Professional Look) */}
@@ -511,19 +515,19 @@ const ProductDetailsPage: React.FC = () => {
       {/* --- Mobile Sticky Bottom Action Bar --- */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-3 lg:hidden z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
          <div className="flex gap-3 max-w-md mx-auto">
-              {/* Add to Cart - Secondary */}
+              {/* Add to Cart - Secondary (Icon Only) */}
               <button 
                   onClick={handleAddToCart} 
-                  className="flex-1 bg-white border-2 border-stone-200 text-stone-700 font-bold text-sm h-12 rounded-full hover:bg-stone-50 hover:border-stone-300 active:scale-95 transition flex items-center justify-center gap-2"
+                  className="w-12 h-12 flex-shrink-0 bg-white border border-stone-200 text-stone-700 rounded-full hover:bg-stone-50 hover:border-stone-300 active:scale-95 transition flex items-center justify-center"
+                  aria-label="Add to Cart"
               >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>Add to Cart</span>
               </button>
 
               {/* Buy Now - Primary */}
               <button 
                   onClick={handleBuyNow} 
-                  className="flex-[1.5] bg-pink-600 text-white font-bold text-base h-12 rounded-full hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg shadow-pink-200"
+                  className="flex-1 bg-pink-600 text-white font-bold text-base h-12 rounded-full hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg shadow-pink-200"
               >
                   <span>Buy Now</span>
                   <ArrowRight className="w-5 h-5" />
