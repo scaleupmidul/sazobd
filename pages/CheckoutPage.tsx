@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
 import { LoaderCircle, MapPin } from 'lucide-react';
 
-// Improved InputField with solid background (Icons removed)
+// Improved InputField with premium styling
 const InputField: React.FC<{ 
     label: string; 
     name: string; 
@@ -14,7 +14,9 @@ const InputField: React.FC<{
     placeholder?: string;
 }> = ({ label, name, type = 'text', value, onChange, required = true, placeholder }) => (
     <div className="space-y-1.5">
-      <label htmlFor={name} className="text-sm font-medium text-stone-700">{label} {required && <span className="text-red-500">*</span>}</label>
+      <label htmlFor={name} className="text-xs font-bold text-stone-600 uppercase tracking-wider ml-1">
+        {label} {required && label && <span className="text-red-500">*</span>}
+      </label>
       <input 
         type={type} 
         id={name} 
@@ -23,7 +25,7 @@ const InputField: React.FC<{
         onChange={onChange} 
         required={required} 
         placeholder={placeholder} 
-        className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm" 
+        className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-pink-500/10 focus:border-pink-500 transition-all duration-300 ease-out bg-stone-50/50 focus:bg-white text-stone-800 text-sm shadow-sm placeholder:text-stone-400 hover:border-stone-300 hover:bg-white" 
       />
     </div>
 );
@@ -438,13 +440,15 @@ const CheckoutPage: React.FC = () => {
         {/* Checkout Form Column (3 columns - 60%) */}
         <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6 bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-stone-200 order-2 lg:order-1">
           <div>
-            <h3 className="text-xl font-bold text-pink-600 border-b pb-2 mb-4">Shipping Information</h3>
-            <div className="space-y-4">
+            <h3 className="text-xl font-bold text-pink-600 border-b pb-2 mb-6">Shipping Information</h3>
+            <div className="space-y-5">
               <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} />
               <InputField label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} />
               
               <div className="space-y-1.5">
-                <label htmlFor="address" className="text-sm font-medium text-stone-700">Full Delivery Address <span className="text-red-500">*</span></label>
+                <label htmlFor="address" className="text-xs font-bold text-stone-600 uppercase tracking-wider ml-1">
+                    Full Delivery Address <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                     {/* Icon Removed from Address Textarea as per request to remove icons */}
                     <textarea 
@@ -454,7 +458,7 @@ const CheckoutPage: React.FC = () => {
                         onChange={handleChange} 
                         required 
                         rows={3}
-                        className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black resize-none shadow-sm" 
+                        className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-pink-500/10 focus:border-pink-500 transition-all duration-300 ease-out bg-stone-50/50 focus:bg-white text-stone-800 text-sm shadow-sm placeholder:text-stone-400 hover:border-stone-300 hover:bg-white resize-none" 
                     />
                 </div>
               </div>
@@ -554,9 +558,9 @@ const CheckoutPage: React.FC = () => {
                                     />
                                   </div>
 
-                                  <div className="space-y-4">
-                                    <div className="space-y-1">
-                                      <label htmlFor="paymentNumber" className="text-sm font-medium text-stone-700">Your Sending Number (যে নাম্বার থেকে টাকা পাঠাবেন) <span className="text-red-500">*</span></label>
+                                  <div className="space-y-5">
+                                    <div className="space-y-1.5">
+                                      <label htmlFor="paymentNumber" className="text-xs font-bold text-stone-600 uppercase tracking-wider ml-1">Your Sending Number (যে নাম্বার থেকে টাকা পাঠাবেন) <span className="text-red-500">*</span></label>
                                       <InputField 
                                         label="" 
                                         name="paymentNumber" 
@@ -567,8 +571,8 @@ const CheckoutPage: React.FC = () => {
                                       />
                                     </div>
 
-                                    <div className="space-y-1">
-                                        <label htmlFor="onlinePaymentMethod" className="text-sm font-medium text-stone-700">Payment Method (পেমেন্ট পদ্ধতি) <span className="text-red-500">*</span></label>
+                                    <div className="space-y-1.5">
+                                        <label htmlFor="onlinePaymentMethod" className="text-xs font-bold text-stone-600 uppercase tracking-wider ml-1">Payment Method (পেমেন্ট পদ্ধতি) <span className="text-red-500">*</span></label>
                                         <div className="relative">
                                             {/* Icon Removed */}
                                             <select 
@@ -577,7 +581,7 @@ const CheckoutPage: React.FC = () => {
                                                 value={formData.onlinePaymentMethod} 
                                                 onChange={handleChange} 
                                                 required={formData.paymentMethod === 'Online'} 
-                                                className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm"
+                                                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-pink-500/10 focus:border-pink-500 transition-all duration-300 ease-out bg-stone-50/50 focus:bg-white text-stone-800 text-sm shadow-sm hover:border-stone-300 hover:bg-white"
                                             >
                                                 <option value="Choose" disabled>Choose</option>
                                                 {safeOnlinePaymentMethods.map(method => (
@@ -587,8 +591,8 @@ const CheckoutPage: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-1">
-                                        <label htmlFor="transactionId" className="text-sm font-medium text-stone-700">Transaction ID (ট্রানজেকশন আইডি) <span className="text-red-500">*</span></label>
+                                    <div className="space-y-1.5">
+                                        <label htmlFor="transactionId" className="text-xs font-bold text-stone-600 uppercase tracking-wider ml-1">Transaction ID (ট্রানজেকশন আইডি) <span className="text-red-500">*</span></label>
                                         <InputField 
                                             label="" 
                                             name="transactionId" 
