@@ -273,7 +273,7 @@ const App: React.FC = () => {
           .animate-notification {
             animation: notificationSlide 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
           }
- 
+
           .text-shadow { text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
           @keyframes pulse-whatsapp {
@@ -283,6 +283,29 @@ const App: React.FC = () => {
           }
           .animate-pulse-whatsapp {
             animation: pulse-whatsapp 2s infinite;
+          }
+
+          /* --- SMOOTH GRADIENT LOGO ANIMATION --- */
+          @keyframes gradient-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          
+          .sazo-logo-gradient {
+            background: linear-gradient(
+              to right, 
+              #db2777 20%, 
+              #9333ea 40%, 
+              #ec4899 60%, 
+              #db2777 80%
+            );
+            background-size: 200% auto;
+            color: #db2777; /* Fallback color */
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-flow 3s linear infinite;
           }
         `}
       </style>
