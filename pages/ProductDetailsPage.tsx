@@ -114,11 +114,12 @@ const ProductDetailsPage: React.FC = () => {
 
   const sizes = product?.sizes || [];
   const isFreeSizeOnly = sizes.length === 1 && sizes[0] === 'Free';
+  const singleAvailableSize = sizes.length === 1 ? sizes[0] : null;
 
   useEffect(() => {
     if (product) {
         setCurrentImageIndex(0);
-        setSelectedSize(isFreeSizeOnly ? 'Free' : null);
+        setSelectedSize(singleAvailableSize);
         window.scrollTo(0, 0); 
         
         const itemIdForAnalytics = product.productId || product.id;
@@ -136,7 +137,7 @@ const ProductDetailsPage: React.FC = () => {
             }
         });
     }
-  }, [product, isFreeSizeOnly]);
+  }, [product, singleAvailableSize]);
 
   useEffect(() => {
     if (images.length <= 1 || isPaused) return;
@@ -337,7 +338,7 @@ const ProductDetailsPage: React.FC = () => {
 
                     {/* Desktop Thumbnails */}
                     {images.length > 1 && (
-                        <div className="flex gap-4 overflow-x-auto py-2 scrollbar-hide">
+                        <div className="flex gap-4 overflow-x-auto p-2 scrollbar-hide">
                             {images.map((img, idx) => (
                                 <button
                                     key={idx}
