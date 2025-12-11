@@ -1,23 +1,38 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, MapPin, User, Phone, Building2, Smartphone, CreditCard, FileText } from 'lucide-react';
 
-// Improved InputField with text-base on mobile to prevent iOS zoom
-const InputField: React.FC<{ label: string; name: string; type?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; required?: boolean; placeholder?: string; }> = 
-({ label, name, type = 'text', value, onChange, required = true, placeholder }) => (
+// Improved InputField with Icon support and solid background
+const InputField: React.FC<{ 
+    label: string; 
+    name: string; 
+    type?: string; 
+    value: string; 
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; 
+    required?: boolean; 
+    placeholder?: string;
+    icon?: React.ElementType;
+}> = ({ label, name, type = 'text', value, onChange, required = true, placeholder, icon: Icon }) => (
     <div className="space-y-1.5">
       <label htmlFor={name} className="text-sm font-medium text-stone-700">{label} {required && <span className="text-red-500">*</span>}</label>
-      <input 
-        type={type} 
-        id={name} 
-        name={name} 
-        value={value || ''} 
-        onChange={onChange} 
-        required={required} 
-        placeholder={placeholder} 
-        className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black" 
-      />
+      <div className="relative">
+          {Icon && (
+              <div className="absolute top-1/2 -translate-y-1/2 left-3 text-stone-400 pointer-events-none">
+                  <Icon className="w-5 h-5" />
+              </div>
+          )}
+          <input 
+            type={type} 
+            id={name} 
+            name={name} 
+            value={value || ''} 
+            onChange={onChange} 
+            required={required} 
+            placeholder={placeholder} 
+            className={`w-full p-3 ${Icon ? 'pl-10' : ''} border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm`} 
+          />
+      </div>
     </div>
 );
 
@@ -283,7 +298,7 @@ const CheckoutPage: React.FC = () => {
   const noShippingMethodAvailable = safeSettings.shippingOptions.length === 0;
   const safeOnlinePaymentMethods = safeSettings.onlinePaymentMethods;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -433,11 +448,29 @@ const CheckoutPage: React.FC = () => {
           <div>
             <h3 className="text-xl font-bold text-pink-600 border-b pb-2 mb-4">Shipping Information</h3>
             <div className="space-y-4">
-              <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g., Your Name" />
-              <InputField label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="e.g., 017XX XXX XXX" />
-              <InputField label="Full Delivery Address" name="address" value={formData.address} onChange={handleChange} placeholder="e.g., House 1, Road 2, Block A, Gulshan" />
+              <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} icon={User} />
+              <InputField label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} icon={Phone} />
+              
+              <div className="space-y-1.5">
+                <label htmlFor="address" className="text-sm font-medium text-stone-700">Full Delivery Address <span className="text-red-500">*</span></label>
+                <div className="relative">
+                    <div className="absolute top-3 left-3 text-stone-400 pointer-events-none">
+                        <MapPin className="w-5 h-5" />
+                    </div>
+                    <textarea 
+                        id="address" 
+                        name="address" 
+                        value={formData.address} 
+                        onChange={handleChange} 
+                        required 
+                        rows={3}
+                        className="w-full p-3 pl-10 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black resize-none shadow-sm" 
+                    />
+                </div>
+              </div>
+
               {safeSettings.showCityField && (
-                <InputField label="City" name="city" value={formData.city} onChange={handleChange} placeholder="e.g., Dhaka" />
+                <InputField label="City" name="city" value={formData.city} onChange={handleChange} icon={Building2} />
               )}
             </div>
           </div>
@@ -534,46 +567,48 @@ const CheckoutPage: React.FC = () => {
                                   <div className="space-y-4">
                                     <div className="space-y-1">
                                       <label htmlFor="paymentNumber" className="text-sm font-medium text-stone-700">Your Sending Number (যে নাম্বার থেকে টাকা পাঠাবেন) <span className="text-red-500">*</span></label>
-                                      <input 
-                                        type="tel" 
-                                        id="paymentNumber" 
+                                      <InputField 
+                                        label="" 
                                         name="paymentNumber" 
+                                        type="tel" 
                                         value={formData.paymentNumber} 
                                         onChange={handleChange} 
                                         required={formData.paymentMethod === 'Online'} 
-                                        placeholder="e.g., 017XX XXX XXX" 
-                                        className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black" 
+                                        icon={Smartphone}
                                       />
                                     </div>
 
                                     <div className="space-y-1">
                                         <label htmlFor="onlinePaymentMethod" className="text-sm font-medium text-stone-700">Payment Method (পেমেন্ট পদ্ধতি) <span className="text-red-500">*</span></label>
-                                        <select 
-                                            id="onlinePaymentMethod" 
-                                            name="onlinePaymentMethod" 
-                                            value={formData.onlinePaymentMethod} 
-                                            onChange={handleChange} 
-                                            required={formData.paymentMethod === 'Online'} 
-                                            className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black"
-                                        >
-                                            <option value="Choose" disabled>Choose</option>
-                                            {safeOnlinePaymentMethods.map(method => (
-                                               <option key={method} value={method}>{method}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <div className="absolute top-1/2 -translate-y-1/2 left-3 text-stone-400 pointer-events-none">
+                                                <CreditCard className="w-5 h-5" />
+                                            </div>
+                                            <select 
+                                                id="onlinePaymentMethod" 
+                                                name="onlinePaymentMethod" 
+                                                value={formData.onlinePaymentMethod} 
+                                                onChange={handleChange} 
+                                                required={formData.paymentMethod === 'Online'} 
+                                                className="w-full p-3 pl-10 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm"
+                                            >
+                                                <option value="Choose" disabled>Choose</option>
+                                                {safeOnlinePaymentMethods.map(method => (
+                                                <option key={method} value={method}>{method}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-1">
                                         <label htmlFor="transactionId" className="text-sm font-medium text-stone-700">Transaction ID (ট্রানজেকশন আইডি) <span className="text-red-500">*</span></label>
-                                        <input 
-                                            type="text" 
-                                            id="transactionId" 
+                                        <InputField 
+                                            label="" 
                                             name="transactionId" 
                                             value={formData.transactionId} 
                                             onChange={handleChange} 
                                             required={formData.paymentMethod === 'Online'} 
-                                            placeholder="e.g., 9K8G7F6H5J" 
-                                            className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black" 
+                                            icon={FileText}
                                         />
                                     </div>
                                   </div>
