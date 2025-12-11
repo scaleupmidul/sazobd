@@ -236,7 +236,7 @@ const ProductDetailsPage: React.FC = () => {
   );
 
   return (
-    <div className="bg-white min-h-screen pb-28 lg:pb-12 relative"> 
+    <div className="bg-[#FEF5F5] min-h-screen pb-28 lg:pb-12 relative"> 
       
       {/* --- Mobile Top Bar --- */}
       <div className="fixed top-0 left-0 right-0 z-30 lg:hidden flex items-center justify-between p-4 pointer-events-none">
@@ -514,20 +514,20 @@ const ProductDetailsPage: React.FC = () => {
 
       {/* --- Mobile Sticky Bottom Action Bar --- */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-3 lg:hidden z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-         <div className="flex gap-3 max-w-md mx-auto">
-              {/* Add to Cart - Secondary (Icon Only) */}
+         <div className="grid grid-cols-6 gap-3 max-w-md mx-auto">
+              {/* Add to Cart - Secondary (Icon Only) - Takes 2/6 columns (33%) */}
               <button 
                   onClick={handleAddToCart} 
-                  className="w-12 h-12 flex-shrink-0 bg-white border border-stone-200 text-stone-700 rounded-full hover:bg-stone-50 hover:border-stone-300 active:scale-95 transition flex items-center justify-center"
+                  className="col-span-2 h-12 bg-white border border-stone-200 text-stone-700 rounded-full hover:bg-stone-50 hover:border-stone-300 active:scale-95 transition flex items-center justify-center"
                   aria-label="Add to Cart"
               >
                   <ShoppingCart className="w-5 h-5" />
               </button>
 
-              {/* Buy Now - Primary */}
+              {/* Buy Now - Primary - Takes 4/6 columns (66%) */}
               <button 
                   onClick={handleBuyNow} 
-                  className="flex-1 bg-pink-600 text-white font-bold text-base h-12 rounded-full hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg shadow-pink-200"
+                  className="col-span-4 bg-pink-600 text-white font-bold text-base h-12 rounded-full hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg shadow-pink-200"
               >
                   <span>Buy Now</span>
                   <ArrowRight className="w-5 h-5" />
