@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
-import { LoaderCircle, MapPin, User, Phone, Building2, Smartphone, CreditCard, FileText } from 'lucide-react';
+import { LoaderCircle, MapPin } from 'lucide-react';
 
-// Improved InputField with Icon support and solid background
+// Improved InputField with solid background (Icons removed)
 const InputField: React.FC<{ 
     label: string; 
     name: string; 
@@ -12,27 +12,19 @@ const InputField: React.FC<{
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; 
     required?: boolean; 
     placeholder?: string;
-    icon?: React.ElementType;
-}> = ({ label, name, type = 'text', value, onChange, required = true, placeholder, icon: Icon }) => (
+}> = ({ label, name, type = 'text', value, onChange, required = true, placeholder }) => (
     <div className="space-y-1.5">
       <label htmlFor={name} className="text-sm font-medium text-stone-700">{label} {required && <span className="text-red-500">*</span>}</label>
-      <div className="relative">
-          {Icon && (
-              <div className="absolute top-1/2 -translate-y-1/2 left-3 text-stone-400 pointer-events-none">
-                  <Icon className="w-5 h-5" />
-              </div>
-          )}
-          <input 
-            type={type} 
-            id={name} 
-            name={name} 
-            value={value || ''} 
-            onChange={onChange} 
-            required={required} 
-            placeholder={placeholder} 
-            className={`w-full p-3 ${Icon ? 'pl-10' : ''} border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm`} 
-          />
-      </div>
+      <input 
+        type={type} 
+        id={name} 
+        name={name} 
+        value={value || ''} 
+        onChange={onChange} 
+        required={required} 
+        placeholder={placeholder} 
+        className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm" 
+      />
     </div>
 );
 
@@ -448,15 +440,13 @@ const CheckoutPage: React.FC = () => {
           <div>
             <h3 className="text-xl font-bold text-pink-600 border-b pb-2 mb-4">Shipping Information</h3>
             <div className="space-y-4">
-              <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} icon={User} />
-              <InputField label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} icon={Phone} />
+              <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} />
+              <InputField label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} />
               
               <div className="space-y-1.5">
                 <label htmlFor="address" className="text-sm font-medium text-stone-700">Full Delivery Address <span className="text-red-500">*</span></label>
                 <div className="relative">
-                    <div className="absolute top-3 left-3 text-stone-400 pointer-events-none">
-                        <MapPin className="w-5 h-5" />
-                    </div>
+                    {/* Icon Removed from Address Textarea as per request to remove icons */}
                     <textarea 
                         id="address" 
                         name="address" 
@@ -464,13 +454,13 @@ const CheckoutPage: React.FC = () => {
                         onChange={handleChange} 
                         required 
                         rows={3}
-                        className="w-full p-3 pl-10 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black resize-none shadow-sm" 
+                        className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black resize-none shadow-sm" 
                     />
                 </div>
               </div>
 
               {safeSettings.showCityField && (
-                <InputField label="City" name="city" value={formData.city} onChange={handleChange} icon={Building2} />
+                <InputField label="City" name="city" value={formData.city} onChange={handleChange} />
               )}
             </div>
           </div>
@@ -574,23 +564,20 @@ const CheckoutPage: React.FC = () => {
                                         value={formData.paymentNumber} 
                                         onChange={handleChange} 
                                         required={formData.paymentMethod === 'Online'} 
-                                        icon={Smartphone}
                                       />
                                     </div>
 
                                     <div className="space-y-1">
                                         <label htmlFor="onlinePaymentMethod" className="text-sm font-medium text-stone-700">Payment Method (পেমেন্ট পদ্ধতি) <span className="text-red-500">*</span></label>
                                         <div className="relative">
-                                            <div className="absolute top-1/2 -translate-y-1/2 left-3 text-stone-400 pointer-events-none">
-                                                <CreditCard className="w-5 h-5" />
-                                            </div>
+                                            {/* Icon Removed */}
                                             <select 
                                                 id="onlinePaymentMethod" 
                                                 name="onlinePaymentMethod" 
                                                 value={formData.onlinePaymentMethod} 
                                                 onChange={handleChange} 
                                                 required={formData.paymentMethod === 'Online'} 
-                                                className="w-full p-3 pl-10 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm"
+                                                className="w-full p-3 border border-stone-300 rounded-lg focus:ring-pink-600 focus:border-pink-600 transition text-base sm:text-sm bg-white text-black shadow-sm"
                                             >
                                                 <option value="Choose" disabled>Choose</option>
                                                 {safeOnlinePaymentMethods.map(method => (
@@ -608,7 +595,6 @@ const CheckoutPage: React.FC = () => {
                                             value={formData.transactionId} 
                                             onChange={handleChange} 
                                             required={formData.paymentMethod === 'Online'} 
-                                            icon={FileText}
                                         />
                                     </div>
                                   </div>
