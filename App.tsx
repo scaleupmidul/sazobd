@@ -228,6 +228,7 @@ const App: React.FC = () => {
           h2, .font-display-lg { font-weight: 600; }
           h3, .font-display-md { font-weight: 600; }
 
+          /* Increased inset shadow spread to 1000px to cover large textareas */
           input:-webkit-autofill,
           input:-webkit-autofill:hover, 
           input:-webkit-autofill:focus, 
@@ -236,7 +237,7 @@ const App: React.FC = () => {
           textarea:-webkit-autofill:hover, 
           textarea:-webkit-autofill:focus, 
           textarea:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-box-shadow: 0 0 0 1000px white inset !important;
             -webkit-text-fill-color: #000 !important;
           }
 
