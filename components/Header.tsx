@@ -51,7 +51,11 @@ const Header: React.FC = () => {
     <>
       <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'}`}>
         <div className="px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16 sm:h-20">
-          <h1 onClick={() => handleNavClick('/')} className="sazo-logo text-2xl sm:text-3xl lg:text-4xl font-semibold text-stone-800 cursor-pointer transition hover:text-pink-600 tracking-wider lg:tracking-[2px]">
+          {/* LOGO with Smooth Gradient Animation */}
+          <h1 
+            onClick={() => handleNavClick('/')} 
+            className="sazo-logo text-2xl sm:text-3xl lg:text-4xl font-extrabold cursor-pointer tracking-wider lg:tracking-[2px] sazo-logo-gradient hover:scale-105 transition-transform duration-300"
+          >
             SAZO
           </h1>
           
@@ -90,7 +94,7 @@ const Header: React.FC = () => {
       >
           {/* Drawer Header with Logo */}
           <div className="flex justify-between items-center p-6 border-b border-stone-100">
-              <h2 className="sazo-logo text-3xl font-bold text-stone-800 tracking-wider" onClick={() => handleNavClick('/')}>SAZO</h2>
+              <h2 className="sazo-logo text-3xl font-extrabold tracking-wider sazo-logo-gradient" onClick={() => handleNavClick('/')}>SAZO</h2>
               <button onClick={() => setIsMenuOpen(false)} className="p-2 -mr-2 text-stone-500 hover:text-pink-600 transition rounded-full hover:bg-stone-50">
                   <X className="w-6 h-6" />
               </button>
