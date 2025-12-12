@@ -1,4 +1,3 @@
-// backend/routes/orders.js
 
 import express from 'express';
 import Order from '../models/Order.js';
@@ -15,26 +14,15 @@ router.get('/stats', protect, async (req, res) => {
         const totalOrders = await Order.countDocuments();
         const onlineTransactions = await Order.countDocuments({ paymentMethod: 'Online' });
         
-        // Revenue: sum of total field where status != 'Cancelled'
-        // FIX: For Online orders, 'total' excludes shipping (as it is advance). 
-        // For COD, 'total' includes shipping.
-        // To get REAL REVENUE (Product + Shipping) for all orders:
-        // If Online: Add total + shippingCharge
-        // If COD: total is already sufficient.
+        // Revenue: sum of (price * quantity) for all items in non-cancelled orders.
+        // We calculate this from cartItems to ensure shipping charges are EXCLUDED from revenue.
         const revenueResult = await Order.aggregate([
             { $match: { status: { $ne: 'Cancelled' } } },
+            { $unwind: '$cartItems' },
             { $group: { 
                 _id: null, 
-                totalRevenue: { 
-                    $sum: {
-                        $cond: {
-                            if: { $eq: ["$paymentMethod", "Online"] },
-                            then: { $add: ["$total", { $ifNull: ["$shippingCharge", 0] }] },
-                            else: "$total"
-                        }
-                    } 
-                } 
-            } }
+                totalRevenue: { $sum: { $multiply: ['$cartItems.price', '$cartItems.quantity'] } } 
+            }}
         ]);
         const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
 
