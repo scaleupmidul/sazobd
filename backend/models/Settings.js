@@ -65,6 +65,12 @@ const SettingsSchema = new mongoose.Schema({
   cosmeticsPromoImage: String,
   cosmeticsMobilePromoImage: String,
   showCosmeticsPromo: { type: Boolean, default: false },
+  // Women Landing Page Settings
+  womenHeroImage: String,
+  womenMobileHeroImage: String,
+  womenHeroTitle: String,
+  womenHeroSubtitle: String,
+  showWomenHeroText: { type: Boolean, default: true },
   // Signature Collections Settings
   signatureFashionDesktopImage: { type: String, default: '' },
   signatureFashionMobileImage: { type: String, default: '' },
