@@ -1,0 +1,152 @@
+
+import React from 'react';
+import ProductCard from '../components/ProductCard';
+import HeroSlider from '../components/HeroSlider';
+import { useAppStore } from '../store';
+import { Product } from '../types';
+import { ShieldCheck, Truck, Sparkles, ArrowRight } from 'lucide-react';
+
+const SectionTitle: React.FC<{ title: string; subtitle?: string; align?: 'center' | 'left' }> = ({ title, subtitle, align = 'center' }) => (
+  <div className={`flex flex-col ${align === 'center' ? 'items-center text-center' : 'items-start text-left'} mb-10 sm:mb-16`}>
+    <p className="text-pink-600 font-bold uppercase tracking-[0.3em] text-[10px] sm:text-xs mb-3">{subtitle}</p>
+    <h2 className="text-3xl sm:text-6xl font-extrabold text-stone-900 tracking-tight leading-none">
+        {title}
+    </h2>
+    <div className={`w-16 h-1.5 bg-pink-500 mt-6 rounded-full ${align === 'center' ? 'mx-auto' : ''}`}></div>
+  </div>
+);
+
+const TrustFactor: React.FC<{ icon: React.ElementType; title: string; desc: string }> = ({ icon: Icon, title, desc }) => (
+    <div className="flex flex-col items-center text-center p-6 group">
+        <div className="w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center text-pink-600 mb-4 group-hover:scale-110 transition-transform duration-500">
+            <Icon size={28} strokeWidth={1.5} />
+        </div>
+        <h4 className="font-bold text-stone-900 text-sm uppercase tracking-widest mb-1">{title}</h4>
+        <p className="text-stone-500 text-xs leading-relaxed">{desc}</p>
+    </div>
+);
+
+const HomePage: React.FC = () => {
+  const { products, navigate, settings, loading } = useAppStore(state => ({
+    products: state.products,
+    navigate: state.navigate,
+    settings: state.settings,
+    loading: state.loading
+  }));
+  const { homepageNewArrivalsCount, homepageTrendingCount } = settings;
+
+  const getSortedProducts = (items: Product[], key: 'newArrivalDisplayOrder' | 'trendingDisplayOrder') => {
+      const pinned = items.filter(p => p[key] && p[key]! < 1000).sort((a, b) => (a[key] || 0) - (b[key] || 0));
+      const others = items.filter(p => !p[key] || p[key]! >= 1000).sort((a, b) => b.id.localeCompare(a.id));
+      return [...pinned, ...others];
+  };
+
+  const allNewArrivals = getSortedProducts(products.filter(p => p.isNewArrival), 'newArrivalDisplayOrder');
+  const allTrendingProducts = getSortedProducts(products.filter(p => p.isTrending), 'trendingDisplayOrder');
+  
+  const newArrivalsDisplay = allNewArrivals.slice(0, homepageNewArrivalsCount || 4);
+  const trendingProductsDisplay = allTrendingProducts.slice(0, homepageTrendingCount || 4);
+
+  return (
+    <div className="overflow-x-hidden bg-[#FEF9F9]">
+      <HeroSlider />
+
+      {/* --- SECTION 1: TRUST BAR --- */}
+      <section className="bg-white border-b border-stone-100 py-10">
+          <div className="max-w-7xl mx-auto px-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-stone-100">
+                  <TrustFactor icon={ShieldCheck} title="Authentic Quality" desc="Curated premium fabrics & original beauty essentials." />
+                  <TrustFactor icon={Truck} title="Express Delivery" desc="Swift delivery across Bangladesh, right to your doorstep." />
+                  <TrustFactor icon={Sparkles} title="Exclusive Styles" desc="Limited edition designs for the modern elegance." />
+              </div>
+          </div>
+      </section>
+
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-8 pt-16 sm:pt-24">
+        
+        {/* --- SECTION 2: DUAL CATEGORY SPOTLIGHT --- */}
+        <section className="mb-24 sm:mb-36">
+            <SectionTitle title="Signature Collections" subtitle="Shop By Department" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10">
+                {/* Fashion Spotlight */}
+                <div 
+                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[2rem] overflow-hidden group cursor-pointer shadow-2xl"
+                    onClick={() => navigate('/shop')}
+                >
+                    <picture>
+                        <source media="(max-width: 640px)" srcSet={settings.signatureFashionMobileImage} />
+                        <img 
+                            src={settings.signatureFashionDesktopImage} 
+                            alt="Fashion Studio" 
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                        />
+                    </picture>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12">
+                        <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] mb-2">Exquisite Clothing</span>
+                        <h3 className="text-white text-3xl sm:text-5xl font-black mb-6">The Fashion<br/>Studio</h3>
+                        <div className="flex items-center gap-3 text-white font-bold group/btn">
+                            <span className="border-b-2 border-white pb-1">Discover Collection</span>
+                            <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Beauty Spotlight */}
+                <div 
+                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[2rem] overflow-hidden group cursor-pointer shadow-2xl"
+                    onClick={() => navigate('/cosmetics')}
+                >
+                    <picture>
+                        <source media="(max-width: 640px)" srcSet={settings.signatureCosmeticsMobileImage} />
+                        <img 
+                            src={settings.signatureCosmeticsDesktopImage} 
+                            alt="Beauty Rituals" 
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                        />
+                    </picture>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12">
+                        <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] mb-2">Radiant Beauty</span>
+                        <h3 className="text-white text-3xl sm:text-5xl font-black mb-6">The Beauty<br/>Rituals</h3>
+                        <div className="flex items-center gap-3 text-white font-bold group/btn">
+                            <span className="border-b-2 border-white pb-1">Shop Essentials</span>
+                            <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {/* --- SECTION 3: TRENDING --- */}
+        <section className="mb-24 sm:mb-40">
+          <SectionTitle title="Trending Now" subtitle="Most Loved Pieces" align="center" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+            {trendingProductsDisplay.map(p => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+
+        {/* --- SECTION 4: NEW ARRIVALS --- */}
+        <section className="pb-32">
+          <SectionTitle title="New Arrivals" subtitle="The Season's Best" align="center" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+            {newArrivalsDisplay.map((p, index) => (
+                 <ProductCard key={p.id} product={p} priority={index < 2} />
+            ))}
+          </div>
+          {!loading && allNewArrivals.length > 4 && (
+            <div className="mt-16 flex justify-center">
+              <button
+                onClick={() => navigate('/shop')}
+                className="group px-12 py-4 bg-stone-900 text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-pink-600 transition-all duration-500 shadow-2xl hover:shadow-pink-200"
+              >
+                Explore Full Gallery
+              </button>
+            </div>
+          )}
+        </section>
+
+      </main>
+    </div>
+  );
+};
+
+export default HomePage;
