@@ -17,7 +17,7 @@ const SectionTitle: React.FC<{ title: string; subtitle?: string; align?: 'center
 
 const TrustFactor: React.FC<{ icon: React.ElementType; title: string; desc: string; className?: string }> = ({ icon: Icon, title, desc, className = "" }) => (
     <div className={`flex flex-col items-center text-center p-3 sm:p-6 group ${className}`}>
-        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white shadow-lg sm:shadow-xl flex items-center justify-center text-pink-600 mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 border border-stone-50">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white shadow-lg sm:shadow-xl flex items-center justify-center text-pink-600 mb-3 sm:mb-5 group-hover:scale-110 transition-transform duration-500 border border-stone-50">
             <Icon className="w-5 h-5 sm:w-7 sm:h-7" strokeWidth={1.5} />
         </div>
         <h4 className="font-bold text-stone-900 text-[10px] sm:text-sm uppercase tracking-widest mb-1 leading-tight">{title}</h4>
