@@ -22,28 +22,28 @@ const DEFAULT_SETTINGS: AppSettings = {
     homepageNewArrivalsCount: 4, homepageTrendingCount: 4,
     showSliderText: true,
     // Cosmetics Defaults
-    cosmeticsHeroImage: 'https://images.unsplash.com/photo-1522338223523-d67246c42ecd?auto=format&fit=crop&q=80&w=1600',
-    cosmeticsMobileHeroImage: 'https://images.unsplash.com/photo-1522338223523-d67246c42ecd?auto=format&fit=crop&q=80&w=800',
+    cosmeticsHeroImage: '',
+    cosmeticsMobileHeroImage: '',
     cosmeticsHeroTitle: 'Redefining Elegance.',
     cosmeticsHeroSubtitle: 'Curated professional beauty essentials for a timeless glow.',
     showCosmeticsHeroText: true,
     cosmeticsPromoThreshold: 2500,
     cosmeticsPromoTitle: 'Master Your Morning Glow',
     cosmeticsPromoDescription: 'Get a free consultation and customized routine.',
-    cosmeticsPromoImage: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&q=80&w=1000',
-    cosmeticsMobilePromoImage: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&q=80&w=600',
+    cosmeticsPromoImage: '',
+    cosmeticsMobilePromoImage: '',
     showCosmeticsPromo: false,
     // Women Defaults
-    womenHeroImage: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=1600',
-    womenMobileHeroImage: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800',
+    womenHeroImage: '',
+    womenMobileHeroImage: '',
     womenHeroTitle: 'Elegance In\nEvery Thread.',
     womenHeroSubtitle: 'Discover timeless silhouettes and premium fabrics designed for the modern woman.',
     showWomenHeroText: true,
-    // Signature Defaults
-    signatureFashionDesktopImage: 'https://picsum.photos/seed/sazo-silk-fashion/1200/500',
-    signatureFashionMobileImage: 'https://picsum.photos/seed/sazo-silk-mobile/400/500',
-    signatureCosmeticsDesktopImage: 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?auto=format&fit=crop&q=80&w=1200&h=500',
-    signatureCosmeticsMobileImage: 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?auto=format&fit=crop&q=80&w=400&h=600'
+    // Signature Defaults - SET TO EMPTY TO PREVENT FLICKER
+    signatureFashionDesktopImage: '',
+    signatureFashionMobileImage: '',
+    signatureCosmeticsDesktopImage: '',
+    signatureCosmeticsMobileImage: ''
 };
 
 const MOCK_PRODUCTS_DATA: Product[] = [];
