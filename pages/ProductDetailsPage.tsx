@@ -1,598 +1,472 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Product } from '../types';
-import { ShoppingCart, ShoppingBag, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X, Star, CreditCard, RefreshCw, Beaker } from 'lucide-react';
-import { useAppStore } from '../store';
 
-// --- Reusable Components ---
+// pages/admin/AdminProductsPage.tsx
+import React, { useState, useMemo, useEffect } from 'react';
+import { Product, AppSettings } from '../../types';
+import { Plus, Edit, Trash2, Search, LoaderCircle, X, Info, ChevronDown, Tag, PlusCircle } from 'lucide-react';
+import { useAppStore } from '../../store';
+import TableSkeleton from '../../components/admin/TableSkeleton';
 
-const Accordion: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean; icon?: React.ElementType }> = ({ title, children, defaultOpen = false, icon: Icon }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  return (
-    <div className="border-b border-stone-100 last:border-0">
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="w-full py-4 flex justify-between items-center text-left hover:bg-stone-50/50 transition px-2 -mx-2 group rounded-lg"
-      >
-        <div className="flex items-center gap-3">
-            {Icon && <Icon className="w-5 h-5 text-pink-500" />}
-            <span className="font-semibold text-stone-800 text-sm tracking-wide">{title}</span>
-        </div>
-        <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'}`}>
-        <div className="text-stone-600 text-sm leading-relaxed px-2">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
+const compressImage = (file: File, options: { maxWidth: number; quality: number }): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(img.src);
+            const { maxWidth, quality } = options;
+            let { width, height } = img;
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+            } else {
+                const maxHeight = maxWidth;
+                if (height > maxHeight) {
+                    width = Math.round((width * maxHeight) / height);
+                    height = maxHeight;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return reject('Failed to get canvas context');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', quality));
+        };
+        img.onerror = (error) => reject(error);
+    });
 };
 
-// --- Trust Badge Component ---
-const TrustBadge: React.FC<{ icon: React.ElementType, title: string, sub: string }> = ({ icon: Icon, title, sub }) => (
-    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl border border-stone-100">
-        <div className="p-2 bg-white rounded-full shadow-sm text-pink-600">
-            <Icon className="w-5 h-5" />
-        </div>
-        <div>
-            <p className="text-xs font-bold text-stone-800 uppercase tracking-wide">{title}</p>
-            <p className="text-[10px] text-stone-500">{sub}</p>
-        </div>
-    </div>
-);
+interface ImageInputProps {
+    currentImage: string;
+    onImageChange: (value: string) => void;
+    options: { maxWidth: number; quality: number };
+}
 
-// --- Skeleton Loader ---
-const ProductDetailsPageSkeleton: React.FC = () => (
-  <main className="max-w-[1280px] mx-auto px-4 lg:px-8 pt-6 lg:pt-12 animate-pulse min-h-screen">
-    <div className="lg:grid lg:grid-cols-2 lg:gap-16">
-      <div className="w-full">
-        {/* Darker background for better visibility against white page */}
-        <div className="aspect-[3/4] bg-stone-300 w-full rounded-2xl mb-4 relative overflow-hidden">
-             <div className="absolute inset-0 bg-gradient-to-r from-stone-300 via-stone-200 to-stone-300 animate-shimmer" style={{ backgroundSize: '200% 100%' }}></div>
-        </div>
-        <div className="hidden lg:flex gap-4">
-             <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
-             <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
-             <div className="w-20 h-24 bg-stone-200 rounded-lg"></div>
-        </div>
-      </div>
-      <div className="mt-8 lg:mt-0 space-y-6">
-        <div className="h-8 bg-stone-300 rounded w-3/4"></div>
-        <div className="h-6 bg-stone-200 rounded w-1/4"></div>
-        <div className="space-y-3 pt-6">
-            <div className="h-12 bg-stone-200 rounded w-full"></div>
-            <div className="h-12 bg-stone-200 rounded w-full"></div>
-        </div>
-      </div>
-    </div>
-  </main>
-);
-
-const ProductDetailsPage: React.FC = () => {
-  const { product, settings, navigate, addToCart, notify, loading, refreshProduct } = useAppStore(state => ({
-    product: state.selectedProduct,
-    settings: state.settings,
-    navigate: state.navigate,
-    addToCart: state.addToCart,
-    notify: state.notify,
-    loading: state.loading,
-    refreshProduct: state.refreshProduct
-  }));
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
-  
-  // Track the last product ID for which view_item was fired to prevent duplicates
-  const analyticsFiredId = useRef<string | null>(null);
-
-  // Swipe state
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchProductData = async () => {
-        const pathParts = window.location.pathname.split('/');
-        const pathId = pathParts[pathParts.length - 1];
-        
-        if (pathId && pathId !== 'product') {
-             await refreshProduct(pathId);
+const ImageInput: React.FC<ImageInputProps> = ({ currentImage, onImageChange, options }) => {
+    const { notify } = useAppStore();
+    const [inputType, setInputType] = useState<'upload' | 'url'>('upload');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 15 * 1024 * 1024) {
+             notify('File is too large.', 'error');
+             return;
         }
-        if (isMounted) setIsFetching(false);
+        setIsProcessing(true);
+        try {
+            const compressedDataUrl = await compressImage(file, options);
+            onImageChange(compressedDataUrl);
+        } catch (error) {
+            notify('Failed to process image.', 'error');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+    return (
+        <div className="flex-grow">
+            <div className="flex items-center mb-2">
+                <button type="button" onClick={() => setInputType('upload')} className={`px-3 py-1 text-xs rounded-l-md ${inputType === 'upload' ? 'bg-pink-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Upload</button>
+                <button type="button" onClick={() => setInputType('url')} className={`px-3 py-1 text-xs rounded-r-md ${inputType === 'url' ? 'bg-pink-600 text-white' : 'bg-gray-200 text-gray-700'}`}>URL</button>
+            </div>
+            {inputType === 'upload' ? (
+                <div className="flex items-center gap-2">
+                    <input type="file" onChange={handleFileSelect} accept="image/*" className="text-xs w-full text-black" />
+                    {isProcessing && <LoaderCircle className="w-4 h-4 animate-spin text-pink-600" />}
+                </div>
+            ) : (
+                <input type="text" value={currentImage.startsWith('data:') ? '' : currentImage} onChange={(e) => onImageChange(e.target.value)} placeholder="https://..." className="w-full p-2 border rounded text-sm bg-white text-black" />
+            )}
+        </div>
+    );
+};
+
+const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) => Promise<void>, onClose: () => void }> = ({ product, onSave, onClose }) => {
+    const { settings, updateSettings } = useAppStore();
+    const [formData, setFormData] = useState({
+        name: product?.name || '',
+        category: product?.category || 'Cosmetics',
+        price: product?.price || 0,
+        regularPrice: product?.regularPrice || 0,
+        description: product?.description || '',
+        fabric: product?.fabric || '',
+        colors: product?.colors.join(', ') || '',
+        sizes: product?.sizes || [],
+        image1: product?.images?.[0] || '',
+        image2: product?.images?.[1] || '',
+        image3: product?.images?.[2] || '',
+        isNewArrival: product?.isNewArrival ?? false,
+        newArrivalDisplayOrder: (!product?.newArrivalDisplayOrder || product.newArrivalDisplayOrder === 1000) ? '' : product.newArrivalDisplayOrder,
+        isTrending: product?.isTrending ?? false,
+        trendingDisplayOrder: (!product?.trendingDisplayOrder || product.trendingDisplayOrder === 1000) ? '' : product.trendingDisplayOrder,
+        onSale: product?.onSale ?? false,
+    });
+    
+    const [isCustomCategory, setIsCustomCategory] = useState(false);
+    const [customCategoryName, setCustomCategoryName] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [newSize, setNewSize] = useState('');
+
+    const COSMETICS_SUB_CATEGORIES = ["Skincare", "Makeup", "Hair Care", "Fragrance"];
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        const checked = (e.target as HTMLInputElement).checked;
+
+        if (name === 'category') {
+            if (value === 'ADD_NEW') {
+                setIsCustomCategory(true);
+            } else {
+                setIsCustomCategory(false);
+                setFormData(prev => ({ ...prev, [name]: value }));
+            }
+        } else {
+            setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        }
     };
 
-    fetchProductData();
-    return () => { isMounted = false; };
-  }, [refreshProduct]);
+    const isCosmetics = !isCustomCategory && formData.category === 'Cosmetics';
 
-  const images = useMemo(() => {
-    if (!product || !product.images) return [];
-    return product.images.filter(img => img && img !== "");
-  }, [product]);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSaving(true);
 
-  const sizes = product?.sizes || [];
-  const isFreeSizeOnly = sizes.length === 1 && sizes[0] === 'Free';
-  const singleAvailableSize = sizes.length === 1 ? sizes[0] : null;
+        const finalCategory = isCustomCategory ? customCategoryName.trim() : formData.category;
 
-  const isCosmetics = useMemo(() => product?.category.toLowerCase() === 'cosmetics', [product]);
-
-  useEffect(() => {
-    if (product) {
-        const currentId = product.productId || product.id;
-
-        // Only update UI and fire analytics if this is a new product or first load
-        // This prevents re-firing when background data refresh occurs (same ID)
-        if (analyticsFiredId.current !== currentId) {
-            setCurrentImageIndex(0);
-            setSelectedSize(singleAvailableSize);
-            window.scrollTo(0, 0); 
-            
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce object
-            window.dataLayer.push({
-                event: 'view_item',
-                ecommerce: {
-                    currency: 'BDT',
-                    items: [{
-                        item_id: currentId,
-                        item_name: product.name,
-                        item_category: product.category,
-                        price: product.price
-                    }]
-                }
-            });
-            
-            analyticsFiredId.current = currentId;
+        // If we added a new category, update global settings so it appears in filters
+        if (isCustomCategory && finalCategory && !settings.categories.includes(finalCategory)) {
+            try {
+                await updateSettings({
+                    categories: [...settings.categories, finalCategory]
+                });
+            } catch (err) {
+                console.error("Failed to auto-add new category to settings", err);
+            }
         }
-    }
-  }, [product, singleAvailableSize]);
 
-  useEffect(() => {
-    if (images.length <= 1 || isPaused) return;
-    const interval = setInterval(() => {
-      setCurrentImageIndex(prev => (prev + 1) % images.length);
-    }, 4000); 
+        const finalData = {
+            ...formData,
+            category: finalCategory,
+            price: Number(formData.price),
+            regularPrice: formData.onSale ? Number(formData.regularPrice) : undefined,
+            colors: formData.colors.split(',').map(s => s.trim()).filter(Boolean),
+            images: [formData.image1, formData.image2, formData.image3].filter(Boolean),
+            newArrivalDisplayOrder: Number(formData.newArrivalDisplayOrder) || 1000,
+            trendingDisplayOrder: Number(formData.trendingDisplayOrder) || 1000,
+        };
+        await onSave(product ? { ...finalData, id: product.id } : finalData);
+        setIsSaving(false);
+    };
 
-    return () => clearInterval(interval);
-  }, [images.length, currentImageIndex, isPaused]);
-
-  const handleNextImage = useCallback(() => {
-    if (images.length > 0) setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  }, [images.length]);
-
-  const handlePrevImage = useCallback(() => {
-    if (images.length > 0) setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  }, [images.length]);
-
-  const minSwipeDistance = 50;
-  const onTouchStart = (e: React.TouchEvent) => {
-    setIsPaused(true);
-    setTouchEnd(0);
-    setTouchStart(e.targetTouches[0].clientX);
-  }
-  const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
-  const onTouchEnd = () => {
-    setIsPaused(false);
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) handleNextImage();
-    if (isRightSwipe) handlePrevImage();
-  }
-
-  const validateSelection = () => {
-      if (!selectedSize) {
-        notify("Please select a size first.", "error"); 
-        return false;
-    }
-    if (!product) return false;
-    return true;
-  }
-
-  const handleAddToCart = () => {
-    if (!validateSelection()) return;
-    if (!product) return;
-    
-    addToCart(product, quantity, selectedSize!);
-    navigate('/cart');
-  };
-
-  const handleBuyNow = () => {
-      if (!validateSelection()) return;
-      if (!product) return;
-
-      addToCart(product, quantity, selectedSize!);
-      navigate('/checkout');
-  }
-
-  const handleShare = async () => {
-      if (navigator.share) {
-          try {
-              await navigator.share({
-                  title: product?.name || 'SAZO Product',
-                  text: `Check out this amazing ${product?.name} on SAZO!`,
-                  url: window.location.href,
-              });
-          } catch (error) {
-              console.log('Error sharing', error);
-          }
-      } else {
-          navigator.clipboard.writeText(window.location.href);
-          notify("Link copied to clipboard!", "success");
-      }
-  };
-
-  if ((loading || isFetching) && !product) return <ProductDetailsPageSkeleton />;
-  
-  if (!product) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-6">
-        <div className="p-6 bg-stone-50 rounded-full">
-            <ShoppingBag className="w-12 h-12 text-stone-300"/>
-        </div>
-        <p className="text-stone-600 text-xl font-medium">Product not found.</p>
-        <button onClick={() => navigate('/shop')} className="bg-pink-600 text-white px-8 py-3 rounded-full font-bold hover:bg-pink-700 transition shadow-lg active:scale-95">
-            Continue Shopping
-        </button>
-      </div>
-    );
-  }
-
-  const regularPrice = product.regularPrice || 0;
-  const hasDiscount = regularPrice > product.price;
-
-  // Custom component for tags to ensure consistency between mobile/desktop
-  const ProductTags = () => (
-    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
-        {product.isNewArrival && <span className="bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">NEW</span>}
-        {product.isTrending && <span className="bg-amber-400 text-stone-900 text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm rounded-sm">BEST</span>}
-    </div>
-  );
-
-  return (
-    <div className="bg-white min-h-screen pb-28 lg:pb-12 relative"> 
-      
-      {/* --- Mobile Top Bar --- */}
-      <div className="fixed top-0 left-0 right-0 z-30 lg:hidden flex items-center justify-between p-4 pointer-events-none">
-        <button onClick={() => navigate('/shop')} className="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-sm text-stone-800 pointer-events-auto active:scale-90 transition">
-             <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button onClick={handleShare} className="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-sm text-stone-800 pointer-events-auto active:scale-90 transition">
-            <Share2 className="w-5 h-5" />
-        </button>
-      </div>
-
-      <main className="max-w-[1280px] mx-auto lg:px-8 lg:pt-8">
-        
-        {/* --- Breadcrumb (Desktop) --- */}
-        <nav className="hidden lg:flex items-center space-x-2 text-xs font-medium text-stone-500 mb-8 uppercase tracking-wider">
-            <span onClick={() => navigate('/')} className="cursor-pointer hover:text-pink-600 transition">Home</span>
-            <ChevronRight className="w-3 h-3 text-stone-300"/>
-            <span onClick={() => navigate('/shop')} className="cursor-pointer hover:text-pink-600 transition">Shop</span>
-            <ChevronRight className="w-3 h-3 text-stone-300"/>
-            <span className="text-stone-900 line-clamp-1 max-w-[200px]">{product.name}</span>
-        </nav>
-
-        <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
-            
-            {/* --- LEFT COLUMN: IMAGES --- */}
-            <div className="w-full select-none">
-                
-                {/* Mobile Slider */}
-                <div 
-                    className="lg:hidden relative bg-stone-100 w-full aspect-[3/4] overflow-hidden group touch-pan-y"
-                    onTouchStart={onTouchStart}
-                    onTouchMove={onTouchMove}
-                    onTouchEnd={onTouchEnd}
-                >
-                    {images.length > 0 ? (
-                        <>
-                            <img 
-                                src={images[currentImageIndex]} 
-                                alt={product.name} 
-                                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
-                            />
-                             {/* Image Counter Badge for Mobile */}
-                            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full">
-                                {currentImageIndex + 1} / {images.length}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
-                    )}
-                    
-                    {/* Updated Tags for Mobile */}
-                    <ProductTags />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+                    <h2 className="text-2xl font-extrabold text-gray-900">{product ? 'Edit Product' : 'Add New Product'}</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition"><X className="w-6 h-6 text-black" /></button>
                 </div>
+                
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+                    {isCosmetics && (
+                        <div className="bg-pink-50 border border-pink-100 p-4 rounded-xl flex gap-3 items-start">
+                            <Info className="w-5 h-5 text-pink-600 mt-0.5 flex-shrink-0" />
+                            <div className="text-xs text-pink-800 leading-relaxed">
+                                <p className="font-bold mb-1 uppercase tracking-wider">Beauty Selection Tip:</p>
+                                <ul className="list-disc pl-4 space-y-1">
+                                    <li>Select the <b>Product Type</b> (Skincare/Makeup/etc) to show it in the right category tabs on the website.</li>
+                                    <li>Use <b>Sizes</b> for Volumes like "50ml", "100ml", or "One Size".</li>
+                                </ul>
+                            </div>
+                        </div>
+                    )}
 
-                {/* Desktop Gallery */}
-                <div className="hidden lg:flex flex-col gap-4">
-                    <div 
-                        className="relative w-full aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden group shadow-sm border border-stone-100 cursor-zoom-in"
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => setIsPaused(false)}
-                    >
-                        {/* Updated Tags for Desktop */}
-                        <ProductTags />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Product Name</label>
+                            <input name="name" value={formData.name} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black focus:ring-2 focus:ring-pink-500 outline-none" required/>
+                        </div>
 
-                        {images.length > 0 ? (
-                            <>
-                                <img
-                                    src={images[currentImageIndex]}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                                />
-                                {images.length > 1 && (
-                                    <>
-                                        <button 
-                                            onClick={handlePrevImage}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110 hover:-translate-x-1"
-                                        >
-                                            <ChevronLeft className="w-5 h-5" />
-                                        </button>
-                                        <button 
-                                            onClick={handleNextImage}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-stone-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:scale-110 hover:translate-x-1"
-                                        >
-                                            <ChevronRight className="w-5 h-5" />
-                                        </button>
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-stone-400">No Image</div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Main Category</label>
+                                <div className="relative">
+                                    <select 
+                                        name="category" 
+                                        value={isCustomCategory ? 'ADD_NEW' : formData.category} 
+                                        onChange={handleChange} 
+                                        className="w-full p-3 border rounded-xl bg-white text-black focus:ring-2 focus:ring-pink-500 outline-none appearance-none"
+                                    >
+                                        <option value="Cosmetics">Cosmetics (Beauty Hub)</option>
+                                        {settings.categories.filter(c => c !== 'Cosmetics').map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                        <option value="Other">Other</option>
+                                        <option value="ADD_NEW" className="font-bold text-pink-600">+ Add New Category...</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
+                            </div>
+                            
+                            {isCustomCategory && (
+                                <div className="animate-fadeIn">
+                                    <label className="block text-xs font-bold text-pink-600 uppercase mb-1 flex items-center gap-1">
+                                        <PlusCircle className="w-3 h-3" /> New Category Name
+                                    </label>
+                                    <input 
+                                        value={customCategoryName} 
+                                        onChange={e => setCustomCategoryName(e.target.value)} 
+                                        className="w-full p-3 border-2 border-pink-200 rounded-xl bg-pink-50/30 text-black focus:border-pink-500 outline-none" 
+                                        placeholder="e.g. Winter Essentials"
+                                        required={isCustomCategory}
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsCustomCategory(false)} 
+                                        className="text-[10px] font-bold text-stone-400 mt-1 hover:text-stone-600 transition"
+                                    >
+                                        ← Back to dropdown
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{isCosmetics ? 'Sub-Category (Type)' : 'Fabric Material / Tag'}</label>
+                            {isCosmetics ? (
+                                <div className="relative">
+                                    <select 
+                                        name="fabric" 
+                                        value={formData.fabric} 
+                                        onChange={handleChange} 
+                                        className="w-full p-3 border rounded-xl bg-white text-black focus:ring-2 focus:ring-pink-500 outline-none appearance-none"
+                                        required
+                                    >
+                                        <option value="">Choose Sub-Category</option>
+                                        {COSMETICS_SUB_CATEGORIES.map(sub => (
+                                            <option key={sub} value={sub}>{sub}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
+                            ) : (
+                                <input name="fabric" value={formData.fabric} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black" placeholder="e.g. Silk / Cotton / Winter" />
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Selling Price (৳)</label>
+                            <input name="price" type="number" value={formData.price} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black" required/>
+                        </div>
+
+                        {formData.onSale && (
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Regular Price (৳)</label>
+                                <input name="regularPrice" type="number" value={formData.regularPrice} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black" />
+                            </div>
                         )}
-                    </div>
 
-                    {/* Desktop Thumbnails */}
-                    {images.length > 1 && (
-                        <div className="flex gap-4 overflow-x-auto p-2 scrollbar-hide">
-                            {images.map((img, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setCurrentImageIndex(idx)}
-                                    className={`relative w-20 aspect-[3/4] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-300 ${
-                                        currentImageIndex === idx 
-                                            ? 'ring-2 ring-pink-600 ring-offset-2 opacity-100' 
-                                            : 'opacity-60 hover:opacity-100'
-                                    }`}
-                                >
-                                    <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
-                                </button>
+                        <div className="md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{isCosmetics ? 'Available Volumes / Sizes' : 'Available Sizes'}</label>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {formData.sizes.map((s, i) => (
+                                    <span key={i} className="bg-stone-100 text-stone-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 border border-stone-200">
+                                        {s} <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => setFormData(p => ({...p, sizes: p.sizes.filter((_, idx) => idx !== i)}))} />
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="flex gap-2">
+                                <input value={newSize} onChange={e => setNewSize(e.target.value)} className="flex-1 p-2 border rounded-lg text-sm bg-white text-black" placeholder={isCosmetics ? "e.g. 50ml" : "e.g. XL"} />
+                                <button type="button" onClick={() => { if(newSize) { setFormData(p => ({...p, sizes: [...p.sizes, newSize]})); setNewSize(''); } }} className="bg-stone-800 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase">Add</button>
+                            </div>
+                        </div>
+                        
+                        <div className="md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                            <textarea name="description" value={formData.description} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black h-24" />
+                        </div>
+
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {['image1', 'image2', 'image3'].map((imgKey, i) => (
+                                <div key={imgKey} className="p-3 border rounded-xl bg-gray-50">
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-2">Image {i+1}</label>
+                                    <div className="flex flex-col gap-3">
+                                        {(formData as any)[imgKey] && <img src={(formData as any)[imgKey]} className="w-full aspect-[3/4] object-cover rounded-lg shadow-sm" />}
+                                        <ImageInput currentImage={(formData as any)[imgKey]} onImageChange={(val) => setFormData(p => ({...p, [imgKey]: val}))} options={{maxWidth: 1000, quality: 0.8}} />
+                                    </div>
+                                </div>
                             ))}
                         </div>
-                    )}
-                </div>
-            </div>
 
-            {/* --- RIGHT COLUMN: DETAILS --- */}
-            <div className="px-4 pt-6 lg:pt-0">
-                
-                <div className="mb-6 border-b border-stone-100 pb-6">
-                    <div className="flex justify-between items-start">
-                        <h1 className="text-2xl lg:text-4xl font-bold text-stone-900 leading-tight mb-2">{product.name}</h1>
-                        <button onClick={handleShare} className="hidden lg:flex p-2 text-stone-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition">
-                            <Share2 className="w-5 h-5"/>
-                        </button>
-                    </div>
-                    
-                    {/* Updated Price Alignment: items-center for vertical centering */}
-                    <div className="flex items-center gap-4 mt-2">
-                         <span className="text-3xl lg:text-4xl font-extrabold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
-                         {hasDiscount && (
-                            <div className="flex flex-col items-start">
-                                <span className="text-lg text-stone-400 line-through">৳{regularPrice.toLocaleString('en-IN')}</span>
-                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-0.5">
-                                    SAVE ৳{(regularPrice - product.price).toLocaleString()}
-                                </span>
+                        <div className="md:col-span-2 space-y-4 pt-4 border-t">
+                            <div className="flex flex-wrap items-center justify-between p-4 bg-gray-50 rounded-xl gap-4">
+                                <div className="flex items-center gap-3">
+                                    <input type="checkbox" name="onSale" checked={formData.onSale} onChange={handleChange} className="w-5 h-5 text-pink-600 rounded" />
+                                    <span className="font-bold text-sm text-gray-700">Display Sale Price</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <input type="checkbox" name="isTrending" checked={formData.isTrending} onChange={handleChange} className="w-5 h-5 text-pink-600 rounded" />
+                                    <span className="font-bold text-sm text-gray-700">Mark as Bestseller</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <input type="checkbox" name="isNewArrival" checked={formData.isNewArrival} onChange={handleChange} className="w-5 h-5 text-pink-600 rounded" />
+                                    <span className="font-bold text-sm text-gray-700">New Arrival</span>
+                                </div>
                             </div>
-                         )}
-                    </div>
-                </div>
-
-                {/* Size Selector */}
-                <div className="mb-6">
-                    <div className="flex justify-between items-center mb-3">
-                         <span className="text-sm font-bold text-stone-900">{isCosmetics ? 'Select Volume' : 'Select Size'}</span>
-                         {!isCosmetics && settings.productPagePromoImage && (
-                            <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center text-xs font-semibold text-pink-600 hover:text-pink-700 transition">
-                                <Ruler className="w-3.5 h-3.5 mr-1"/> Size Guide
-                            </button>
-                        )}
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                        {sizes.map(size => {
-                             const isSelected = selectedSize === size;
-                             return (
-                                <button
-                                    key={size}
-                                    onClick={() => !isFreeSizeOnly && setSelectedSize(size)}
-                                    disabled={isFreeSizeOnly && size !== 'Free'}
-                                    className={`
-                                        h-10 sm:h-12 min-w-[3.5rem] px-4 rounded-lg flex items-center justify-center text-sm font-semibold transition-all duration-200 border
-                                        ${isSelected 
-                                            ? 'bg-stone-900 text-white border-stone-900 shadow-md transform scale-105' 
-                                            : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                                        }
-                                        ${isFreeSizeOnly && size !== 'Free' ? 'opacity-40 cursor-not-allowed bg-stone-50 border-stone-100 text-stone-400 decoration-slice line-through' : ''}
-                                    `}
-                                >
-                                    {size === 'Free' ? 'One Size' : size}
-                                </button>
-                             );
-                        })}
-                    </div>
-                </div>
-                
-                {/* --- MOBILE QUANTITY SELECTOR (Distinct Section) --- */}
-                <div className="lg:hidden mb-8">
-                     <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100">
-                        <span className="font-semibold text-stone-700 text-sm">Quantity</span>
-                        <div className="flex items-center gap-3">
-                            <button 
-                                onClick={() => setQuantity(Math.max(1, quantity - 1))} 
-                                className="w-9 h-9 flex items-center justify-center bg-white border border-stone-200 rounded-full shadow-sm text-stone-600 active:scale-90 transition hover:border-pink-300 hover:text-pink-600"
-                            >
-                                <Minus className="w-4 h-4"/>
-                            </button>
-                            <span className="text-lg font-bold text-stone-900 w-6 text-center">{quantity}</span>
-                            <button 
-                                onClick={() => setQuantity(quantity + 1)} 
-                                className="w-9 h-9 flex items-center justify-center bg-white border border-stone-200 rounded-full shadow-sm text-stone-600 active:scale-90 transition hover:border-pink-300 hover:text-pink-600"
-                            >
-                                <Plus className="w-4 h-4"/>
-                            </button>
-                        </div>
-                     </div>
-                </div>
-
-                {/* Desktop Actions */}
-                <div className="hidden lg:block mb-10">
-                     {/* Row 1: Quantity */}
-                     <div className="flex items-center gap-4 mb-4">
-                        <span className="text-sm font-bold text-stone-700">Quantity</span>
-                        <div className="flex items-center border border-stone-200 rounded-lg w-32 justify-between px-2 h-11 bg-white">
-                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center text-stone-500 hover:text-stone-900 transition"><Minus className="w-4 h-4"/></button>
-                            <span className="font-bold text-stone-900 text-lg">{quantity}</span>
-                            <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center text-stone-500 hover:text-stone-900 transition"><Plus className="w-4 h-4"/></button>
                         </div>
                     </div>
+                </form>
 
-                    {/* Row 2: Buttons Side-by-Side */}
-                    <div className="flex gap-4">
-                        <button 
-                            onClick={handleAddToCart} 
-                            className="flex-1 bg-white border-2 border-stone-200 text-stone-900 font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-stone-50 transition duration-300 flex items-center justify-center gap-2"
-                        >
-                            <ShoppingCart className="w-4 h-4" />
-                            <span>Add to Cart</span>
-                        </button>
-
-                        <button 
-                            onClick={handleBuyNow} 
-                            className="flex-1 bg-pink-600 text-white font-bold text-sm uppercase tracking-widest h-14 rounded-xl hover:bg-pink-700 transition duration-300 flex items-center justify-center gap-2 shadow-xl shadow-pink-200 hover:shadow-2xl transform hover:-translate-y-0.5"
-                        >
-                            <span>Buy It Now</span>
-                            <ArrowRight className="w-5 h-5" />
-                        </button>
-                    </div>
+                <div className="p-6 bg-gray-50 border-t flex justify-end gap-3">
+                    <button onClick={onClose} className="px-6 py-2.5 font-bold text-gray-500 hover:text-gray-800 transition">Cancel</button>
+                    <button 
+                        onClick={handleSubmit} 
+                        disabled={isSaving}
+                        className="bg-pink-600 text-white px-10 py-2.5 rounded-xl font-bold shadow-lg shadow-pink-100 hover:bg-pink-700 transition flex items-center gap-2"
+                    >
+                        {isSaving ? <LoaderCircle className="w-5 h-5 animate-spin" /> : 'Save Product'}
+                    </button>
                 </div>
-                
-                {/* Trust Badges (Professional Look) */}
-                <div className="grid grid-cols-2 gap-3 mb-8">
-                    <TrustBadge icon={ShieldCheck} title="Authentic" sub="100% Original Product" />
-                    <TrustBadge icon={Truck} title="Fast Delivery" sub="All over Bangladesh" />
-                    <TrustBadge icon={RefreshCw} title="Easy Return" sub="If goods are damaged" />
-                    <TrustBadge icon={CreditCard} title="Secure Payment" sub="COD & Online Payment" />
-                </div>
-
-                {/* Accordions */}
-                <div className="space-y-2">
-                    <Accordion title="Product Description" defaultOpen>
-                        <p className="mb-4 text-stone-600 font-light">{product.description}</p>
-                    </Accordion>
-                    
-                    {isCosmetics ? (
-                        <Accordion title="Usage & Storage" icon={Beaker}>
-                            <div className="space-y-2">
-                                <p>Optimized for {product.fabric} routines. Follow these steps for the best results:</p>
-                                <ul className="list-disc pl-5 space-y-1 text-stone-500 marker:text-pink-300">
-                                     <li>Apply on clean, dry skin or hair</li>
-                                     <li>Store in a cool, dry place away from direct sunlight</li>
-                                     <li>Always perform a patch test before first full use</li>
-                                     <li>Keep the cap tightly closed after each application</li>
-                                </ul>
-                            </div>
-                        </Accordion>
-                    ) : (
-                        <Accordion title="Material & Care" icon={ShieldCheck}>
-                            <div className="space-y-2">
-                                <p>Crafted from premium {product.fabric} for maximum comfort and longevity.</p>
-                                <ul className="list-disc pl-5 space-y-1 text-stone-500 marker:text-pink-300">
-                                     <li>Machine wash cold with like colors</li>
-                                     <li>Do not bleach</li>
-                                     <li>Tumble dry low</li>
-                                     <li>Cool iron if needed</li>
-                                </ul>
-                            </div>
-                        </Accordion>
-                    )}
-
-                    <Accordion title="Delivery & Returns" icon={Truck}>
-                         <div className="space-y-3">
-                             <div className="flex items-start gap-3">
-                                 <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2"></div>
-                                 <p><strong>Inside Dhaka:</strong> 2-3 Business Days</p>
-                             </div>
-                             <div className="flex items-start gap-3">
-                                 <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2"></div>
-                                 {/* Updated delivery text */}
-                                 <p><strong>Outside Dhaka:</strong> 2-4 Business Days</p>
-                             </div>
-                             <div className="bg-amber-50 p-3 rounded-lg text-amber-800 text-xs border border-amber-100 mt-2">
-                                 Please check the product in front of the delivery man. Returns are only accepted instantly upon delivery if there is a defect.
-                             </div>
-                         </div>
-                    </Accordion>
-                </div>
-
             </div>
         </div>
-      </main>
-
-      {/* --- Mobile Sticky Bottom Action Bar --- */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-3 lg:hidden z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-         <div className="grid grid-cols-6 gap-3 max-w-md mx-auto">
-              {/* Add to Cart - Secondary (Icon Only) - Takes 2/6 columns (33%) */}
-              <button 
-                  onClick={handleAddToCart} 
-                  className="col-span-2 h-12 bg-white border border-stone-200 text-stone-700 rounded-full hover:bg-stone-50 hover:border-stone-300 active:scale-95 transition flex items-center justify-center"
-                  aria-label="Add to Cart"
-              >
-                  <ShoppingCart className="w-5 h-5" />
-              </button>
-
-              {/* Buy Now - Primary - Takes 4/6 columns (66%) */}
-              <button 
-                  onClick={handleBuyNow} 
-                  className="col-span-4 bg-pink-600 text-white font-bold text-base h-12 rounded-full hover:bg-pink-700 active:scale-95 transition flex items-center justify-center gap-2 shadow-lg shadow-pink-200"
-              >
-                  <span>Buy Now</span>
-                  <ArrowRight className="w-5 h-5" />
-              </button>
-         </div>
-      </div>
-
-       {/* Size Guide Modal */}
-       {isSizeGuideOpen && !isCosmetics && settings.productPagePromoImage && (
-            <div
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
-                onClick={() => setIsSizeGuideOpen(false)}
-            >
-                <div className="relative max-w-4xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-scaleIn flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
-                    <div className="flex justify-between items-center p-4 border-b border-stone-100 bg-stone-50">
-                        <h3 className="text-lg font-bold text-stone-900">Size Guide</h3>
-                        <button 
-                            onClick={() => setIsSizeGuideOpen(false)} 
-                            className="p-2 bg-white rounded-full hover:bg-stone-200 text-stone-600 transition shadow-sm"
-                        >
-                            <X className="w-5 h-5" /> 
-                        </button>
-                    </div>
-                    <div className="overflow-y-auto p-4 flex-1 bg-white">
-                        <img src={settings.productPagePromoImage} alt="Size Guide" className="w-full h-auto rounded-lg" />
-                    </div>
-                </div>
-            </div>
-        )}
-
-    </div>
-  );
+    );
 };
 
-export default ProductDetailsPage;
+const AdminProductsPage: React.FC = () => {
+    const { adminProducts, adminProductsPagination, loadAdminProducts, addProduct, updateProduct, deleteProduct } = useAppStore();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+            setCurrentPage(1);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setIsLoading(true);
+            await loadAdminProducts(currentPage, debouncedSearchTerm);
+            setIsLoading(false);
+        };
+        fetchProducts();
+    }, [currentPage, debouncedSearchTerm, loadAdminProducts]);
+
+    const handleSave = async (productData: any) => {
+        if (editingProduct) {
+            await updateProduct({ ...productData, id: editingProduct.id });
+        } else {
+            await addProduct(productData);
+        }
+        setIsModalOpen(false);
+        setEditingProduct(null);
+        loadAdminProducts(currentPage, debouncedSearchTerm);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Delete this product permanently?')) {
+            await deleteProduct(id);
+            loadAdminProducts(currentPage, debouncedSearchTerm);
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Product Inventory</h1>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm bg-white text-black shadow-sm outline-none focus:ring-2 focus:ring-pink-500/20" placeholder="Search products..." />
+                    </div>
+                    <button onClick={() => { setEditingProduct(null); setIsModalOpen(true); }} className="bg-pink-600 text-white px-5 py-2.5 rounded-xl shadow-lg hover:bg-pink-700 transition flex items-center gap-2 font-bold whitespace-nowrap">
+                        <Plus className="w-5 h-5" />
+                        <span>Add Product</span>
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Product</th>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Category & Type</th>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Price</th>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Status</th>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    {isLoading ? <TableSkeleton rows={8} cols={5} /> : (
+                        <tbody className="divide-y divide-gray-50">
+                            {adminProducts.map(p => (
+                                <tr key={p.id} className="hover:bg-pink-50/30 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-stone-200">
+                                                <img src={p.images[0]} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-gray-900 line-clamp-1">{p.name}</div>
+                                                <div className="text-[10px] text-gray-400 font-mono">ID: {p.productId || p.id.slice(-6)}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col items-start gap-1">
+                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${p.category === 'Cosmetics' ? 'bg-pink-100 text-pink-700' : 'bg-stone-100 text-stone-600'}`}>
+                                                {p.category}
+                                            </span>
+                                            {p.fabric && (
+                                                <div className="flex items-center gap-1 text-[10px] text-stone-500 font-bold bg-stone-50 px-2 py-0.5 rounded border border-stone-100">
+                                                    <Tag className="w-2.5 h-2.5" />
+                                                    {p.fabric}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="font-extrabold text-gray-900">৳{p.price.toLocaleString()}</div>
+                                        {p.onSale && <div className="text-[10px] text-gray-400 line-through">৳{p.regularPrice?.toLocaleString()}</div>}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-wrap gap-1">
+                                            {p.isNewArrival && <span className="w-2 h-2 bg-pink-500 rounded-full" title="New Arrival"></span>}
+                                            {p.isTrending && <span className="w-2 h-2 bg-yellow-500 rounded-full" title="Trending"></span>}
+                                            {p.onSale && <span className="w-2 h-2 bg-green-500 rounded-full" title="On Sale"></span>}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => { setEditingProduct(p); setIsModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"><Edit className="w-4 h-4 text-blue-600" /></button>
+                                            <button onClick={() => handleDelete(p.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"><Trash2 className="w-4 h-4 text-red-600" /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    )}
+                </table>
+            </div>
+
+            {adminProductsPagination.pages > 1 && (
+                <div className="flex justify-center items-center gap-4 pt-4">
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-4 py-2 border rounded-xl hover:bg-white transition disabled:opacity-30">Previous</button>
+                    <span className="text-sm font-bold text-gray-500">Page {currentPage} of {adminProductsPagination.pages}</span>
+                    <button onClick={() => setCurrentPage(p => Math.min(adminProductsPagination.pages, p + 1))} disabled={currentPage === adminProductsPagination.pages} className="px-4 py-2 border rounded-xl hover:bg-white transition disabled:opacity-30">Next</button>
+                </div>
+            )}
+
+            {isModalOpen && <ProductFormModal product={editingProduct} onSave={handleSave} onClose={() => setIsModalOpen(false)} />}
+        </div>
+    );
+};
+
+export default AdminProductsPage;
