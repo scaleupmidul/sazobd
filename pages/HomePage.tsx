@@ -89,7 +89,7 @@ const HomePage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10">
                 {/* Fashion Spotlight */}
                 <div 
-                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[2rem] overflow-hidden group cursor-pointer shadow-2xl"
+                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[1.7rem] sm:rounded-[2rem] mx-6 sm:mx-0 overflow-hidden group cursor-pointer shadow-2xl"
                     onClick={() => navigate('/women')}
                 >
                     <picture>
@@ -112,7 +112,7 @@ const HomePage: React.FC = () => {
 
                 {/* Beauty Spotlight */}
                 <div 
-                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[2rem] overflow-hidden group cursor-pointer shadow-2xl"
+                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[1.7rem] sm:rounded-[2rem] mx-6 sm:mx-0 overflow-hidden group cursor-pointer shadow-2xl"
                     onClick={() => navigate('/cosmetics')}
                 >
                     <picture>
