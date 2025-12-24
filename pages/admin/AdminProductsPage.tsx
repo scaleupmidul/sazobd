@@ -2,7 +2,7 @@
 // pages/admin/AdminProductsPage.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, AppSettings } from '../../types';
-import { Plus, Edit, Trash2, Search, LoaderCircle, X, Info, ChevronDown, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, LoaderCircle, X, Info, ChevronDown, Tag, PlusCircle } from 'lucide-react';
 import { useAppStore } from '../../store';
 import TableSkeleton from '../../components/admin/TableSkeleton';
 
@@ -84,7 +84,7 @@ const ImageInput: React.FC<ImageInputProps> = ({ currentImage, onImageChange, op
 };
 
 const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) => Promise<void>, onClose: () => void }> = ({ product, onSave, onClose }) => {
-    const { settings } = useAppStore();
+    const { settings, updateSettings } = useAppStore();
     const [formData, setFormData] = useState({
         name: product?.name || '',
         category: product?.category || 'Cosmetics',
@@ -103,6 +103,9 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
         trendingDisplayOrder: (!product?.trendingDisplayOrder || product.trendingDisplayOrder === 1000) ? '' : product.trendingDisplayOrder,
         onSale: product?.onSale ?? false,
     });
+    
+    const [isCustomCategory, setIsCustomCategory] = useState(false);
+    const [customCategoryName, setCustomCategoryName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [newSize, setNewSize] = useState('');
 
@@ -111,16 +114,41 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
-        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+
+        if (name === 'category') {
+            if (value === 'ADD_NEW') {
+                setIsCustomCategory(true);
+            } else {
+                setIsCustomCategory(false);
+                setFormData(prev => ({ ...prev, [name]: value }));
+            }
+        } else {
+            setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        }
     };
 
-    const isCosmetics = formData.category === 'Cosmetics';
+    const isCosmetics = !isCustomCategory && formData.category === 'Cosmetics';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
+
+        const finalCategory = isCustomCategory ? customCategoryName.trim() : formData.category;
+
+        // If we added a new category, update global settings so it appears in filters
+        if (isCustomCategory && finalCategory && !settings.categories.includes(finalCategory)) {
+            try {
+                await updateSettings({
+                    categories: [...settings.categories, finalCategory]
+                });
+            } catch (err) {
+                console.error("Failed to auto-add new category to settings", err);
+            }
+        }
+
         const finalData = {
             ...formData,
+            category: finalCategory,
             price: Number(formData.price),
             regularPrice: formData.onSale ? Number(formData.regularPrice) : undefined,
             colors: formData.colors.split(',').map(s => s.trim()).filter(Boolean),
@@ -160,19 +188,52 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
                             <input name="name" value={formData.name} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black focus:ring-2 focus:ring-pink-500 outline-none" required/>
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Main Category</label>
-                            <select name="category" value={formData.category} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black focus:ring-2 focus:ring-pink-500 outline-none">
-                                <option value="Cosmetics">Cosmetics (Beauty Hub)</option>
-                                {settings.categories.filter(c => c !== 'Cosmetics').map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                                <option value="Other">Other</option>
-                            </select>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Main Category</label>
+                                <div className="relative">
+                                    <select 
+                                        name="category" 
+                                        value={isCustomCategory ? 'ADD_NEW' : formData.category} 
+                                        onChange={handleChange} 
+                                        className="w-full p-3 border rounded-xl bg-white text-black focus:ring-2 focus:ring-pink-500 outline-none appearance-none"
+                                    >
+                                        <option value="Cosmetics">Cosmetics (Beauty Hub)</option>
+                                        {settings.categories.filter(c => c !== 'Cosmetics').map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                        <option value="Other">Other</option>
+                                        <option value="ADD_NEW" className="font-bold text-pink-600">+ Add New Category...</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
+                            </div>
+                            
+                            {isCustomCategory && (
+                                <div className="animate-fadeIn">
+                                    <label className="block text-xs font-bold text-pink-600 uppercase mb-1 flex items-center gap-1">
+                                        <PlusCircle className="w-3 h-3" /> New Category Name
+                                    </label>
+                                    <input 
+                                        value={customCategoryName} 
+                                        onChange={e => setCustomCategoryName(e.target.value)} 
+                                        className="w-full p-3 border-2 border-pink-200 rounded-xl bg-pink-50/30 text-black focus:border-pink-500 outline-none" 
+                                        placeholder="e.g. Winter Essentials"
+                                        required={isCustomCategory}
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsCustomCategory(false)} 
+                                        className="text-[10px] font-bold text-stone-400 mt-1 hover:text-stone-600 transition"
+                                    >
+                                        ← Back to dropdown
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{isCosmetics ? 'Sub-Category (Type)' : 'Fabric Material'}</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{isCosmetics ? 'Sub-Category (Type)' : 'Fabric Material / Tag'}</label>
                             {isCosmetics ? (
                                 <div className="relative">
                                     <select 
@@ -190,7 +251,7 @@ const ProductFormModal: React.FC<{ product?: Product | null, onSave: (p: any) =>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                 </div>
                             ) : (
-                                <input name="fabric" value={formData.fabric} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black" placeholder="e.g. Cotton" />
+                                <input name="fabric" value={formData.fabric} onChange={handleChange} className="w-full p-3 border rounded-xl bg-white text-black" placeholder="e.g. Silk / Cotton / Winter" />
                             )}
                         </div>
 
@@ -363,7 +424,7 @@ const AdminProductsPage: React.FC = () => {
                                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${p.category === 'Cosmetics' ? 'bg-pink-100 text-pink-700' : 'bg-stone-100 text-stone-600'}`}>
                                                 {p.category}
                                             </span>
-                                            {p.category === 'Cosmetics' && p.fabric && (
+                                            {p.fabric && (
                                                 <div className="flex items-center gap-1 text-[10px] text-stone-500 font-bold bg-stone-50 px-2 py-0.5 rounded border border-stone-100">
                                                     <Tag className="w-2.5 h-2.5" />
                                                     {p.fabric}
