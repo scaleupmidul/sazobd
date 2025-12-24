@@ -1,4 +1,3 @@
-
 // pages/CosmeticsPage.tsx (Displaying as Cosmetics)
 import React, { useMemo, useEffect, useState } from 'react';
 import { useAppStore } from '../store';
@@ -12,6 +11,8 @@ import {
   ChevronRight,
   ArrowRight
 } from 'lucide-react';
+
+const PRODUCTS_PER_PAGE = 12;
 
 const ProductCardSkeleton: React.FC = () => (
     <div className="bg-white rounded-lg border border-stone-200 overflow-hidden shadow-lg w-full h-full flex flex-col">
@@ -31,6 +32,7 @@ const CosmeticsPage: React.FC = () => {
     const { products, cart, updateCartQuantity, navigate, loading, ensureAllProductsLoaded, fullProductsLoaded, settings } = useAppStore();
     const [activeFilter, setActiveFilter] = useState('All');
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         if (!fullProductsLoaded) {
@@ -51,6 +53,29 @@ const CosmeticsPage: React.FC = () => {
         });
     }, [products, activeFilter]);
 
+    // Reset pagination when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeFilter]);
+
+    // Scroll to grid top on page change
+    useEffect(() => {
+        if (currentPage > 1) {
+            const element = document.getElementById('shop-grid');
+            if (element) {
+                const yOffset = -100; 
+                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        }
+    }, [currentPage]);
+
+    const totalPages = Math.ceil(cosmeticsProducts.length / PRODUCTS_PER_PAGE);
+    const paginatedProducts = useMemo(() => {
+        const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+        return cosmeticsProducts.slice(start, start + PRODUCTS_PER_PAGE);
+    }, [cosmeticsProducts, currentPage]);
+
     const categories = [
         { name: 'All', label: 'All Essentials' },
         { name: 'Skincare', label: 'Skincare' },
@@ -64,8 +89,8 @@ const CosmeticsPage: React.FC = () => {
 
     return (
         <div className="bg-[#FFF9F9] min-h-screen relative">
-            {/* --- LUXURY HERO --- */}
-            <section className="relative h-[50vh] sm:h-[65vh] w-full flex items-center overflow-hidden">
+            {/* --- LUXURY HERO (Matched to Home Page Size) --- */}
+            <section className="relative w-full aspect-[4/3] sm:aspect-[16/7] md:aspect-[16/7] lg:aspect-[16/6] xl:aspect-[16/6] flex items-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <picture>
                         <source media="(max-width: 640px)" srcSet={settings.cosmeticsMobileHeroImage} />
@@ -79,22 +104,24 @@ const CosmeticsPage: React.FC = () => {
                 </div>
 
                 {settings.showCosmeticsHeroText && (
-                    <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-                        <div className="max-w-xl animate-fadeInUp">
-                            <span className="text-pink-600 font-bold uppercase tracking-widest text-xs mb-4 block">The Cosmetics Edit</span>
-                            <h1 className="text-4xl sm:text-7xl font-extrabold text-stone-900 leading-[1.1] mb-6 whitespace-pre-line">
+                    <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 md:px-16 w-full">
+                        <div className="max-w-xl animate-fadeInUp space-y-2 sm:space-y-4">
+                            <span className="text-pink-600 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-1 block">The Cosmetics Edit</span>
+                            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 leading-tight">
                                 {settings.cosmeticsHeroTitle || 'Nurturing Your Natural Glow.'}
                             </h1>
-                            <p className="text-stone-600 text-base sm:text-lg mb-8 max-w-sm leading-relaxed">
+                            <p className="text-stone-600 text-xs sm:text-lg max-w-sm leading-relaxed">
                                 {settings.cosmeticsHeroSubtitle || 'Curated professional beauty essentials for a timeless radiance.'}
                             </p>
-                            <button 
-                                onClick={() => document.getElementById('shop-grid')?.scrollIntoView({ behavior: 'smooth' })}
-                                className="bg-stone-900 text-white px-8 py-3.5 rounded-full font-bold hover:bg-stone-800 transition shadow-xl flex items-center gap-2 group"
-                            >
-                                <span>Explore Products</span>
-                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                            </button>
+                            <div className="pt-2">
+                                <button 
+                                    onClick={() => document.getElementById('shop-grid')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="bg-stone-900 text-white px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full font-bold text-sm sm:text-base hover:bg-stone-800 transition shadow-xl flex items-center gap-2 group"
+                                >
+                                    <span>Explore Products</span>
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -147,7 +174,7 @@ const CosmeticsPage: React.FC = () => {
                     {loading && cosmeticsProducts.length === 0 ? (
                         [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
                     ) : (
-                        cosmeticsProducts.map((product, index) => (
+                        paginatedProducts.map((product, index) => (
                             <ProductCard 
                                 key={product.id} 
                                 product={product} 
@@ -156,6 +183,29 @@ const CosmeticsPage: React.FC = () => {
                         ))
                     )}
                 </div>
+
+                {/* Pagination UI */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center space-x-4 mt-12 mb-8 sm:mt-16 sm:mb-12">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="border border-pink-600 text-pink-600 font-medium px-6 py-2 rounded-full hover:bg-pink-600 hover:text-white transition duration-300 active:scale-95 text-sm disabled:bg-transparent disabled:text-pink-300 disabled:border-pink-300 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <span className="text-sm font-medium text-stone-700">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="border border-pink-600 text-pink-600 font-medium px-6 py-2 rounded-full hover:bg-pink-600 hover:text-white transition duration-300 active:scale-95 text-sm disabled:bg-transparent disabled:text-pink-300 disabled:border-pink-300 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </main>
 
             {/* --- SIDE CART PREVIEW --- */}
