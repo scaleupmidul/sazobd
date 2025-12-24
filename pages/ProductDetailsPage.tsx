@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Product } from '../types';
-import { ShoppingCart, ShoppingBag, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X, Star, CreditCard, RefreshCw } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, ChevronLeft, ChevronRight, Share2, Plus, Minus, ChevronDown, Truck, ShieldCheck, Ruler, Heart, ArrowRight, X, Star, CreditCard, RefreshCw, Beaker } from 'lucide-react';
 import { useAppStore } from '../store';
 
 // --- Reusable Components ---
@@ -118,6 +117,8 @@ const ProductDetailsPage: React.FC = () => {
   const sizes = product?.sizes || [];
   const isFreeSizeOnly = sizes.length === 1 && sizes[0] === 'Free';
   const singleAvailableSize = sizes.length === 1 ? sizes[0] : null;
+
+  const isCosmetics = useMemo(() => product?.category.toLowerCase() === 'cosmetics', [product]);
 
   useEffect(() => {
     if (product) {
@@ -380,8 +381,6 @@ const ProductDetailsPage: React.FC = () => {
                         </button>
                     </div>
                     
-                    {/* Stars and (New Arrival) text Removed as per request */}
-
                     {/* Updated Price Alignment: items-center for vertical centering */}
                     <div className="flex items-center gap-4 mt-2">
                          <span className="text-3xl lg:text-4xl font-extrabold text-pink-600">৳{product.price.toLocaleString('en-IN')}</span>
@@ -399,8 +398,8 @@ const ProductDetailsPage: React.FC = () => {
                 {/* Size Selector */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-3">
-                         <span className="text-sm font-bold text-stone-900">Select Size</span>
-                         {settings.productPagePromoImage && (
+                         <span className="text-sm font-bold text-stone-900">{isCosmetics ? 'Select Volume' : 'Select Size'}</span>
+                         {!isCosmetics && settings.productPagePromoImage && (
                             <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center text-xs font-semibold text-pink-600 hover:text-pink-700 transition">
                                 <Ruler className="w-3.5 h-3.5 mr-1"/> Size Guide
                             </button>
@@ -497,17 +496,33 @@ const ProductDetailsPage: React.FC = () => {
                     <Accordion title="Product Description" defaultOpen>
                         <p className="mb-4 text-stone-600 font-light">{product.description}</p>
                     </Accordion>
-                    <Accordion title="Material & Care" icon={ShieldCheck}>
-                        <div className="space-y-2">
-                            <p>Crafted from premium {product.fabric} for maximum comfort and longevity.</p>
-                            <ul className="list-disc pl-5 space-y-1 text-stone-500 marker:text-pink-300">
-                                 <li>Machine wash cold with like colors</li>
-                                 <li>Do not bleach</li>
-                                 <li>Tumble dry low</li>
-                                 <li>Cool iron if needed</li>
-                            </ul>
-                        </div>
-                    </Accordion>
+                    
+                    {isCosmetics ? (
+                        <Accordion title="Usage & Storage" icon={Beaker}>
+                            <div className="space-y-2">
+                                <p>Optimized for {product.fabric} routines. Follow these steps for the best results:</p>
+                                <ul className="list-disc pl-5 space-y-1 text-stone-500 marker:text-pink-300">
+                                     <li>Apply on clean, dry skin or hair</li>
+                                     <li>Store in a cool, dry place away from direct sunlight</li>
+                                     <li>Always perform a patch test before first full use</li>
+                                     <li>Keep the cap tightly closed after each application</li>
+                                </ul>
+                            </div>
+                        </Accordion>
+                    ) : (
+                        <Accordion title="Material & Care" icon={ShieldCheck}>
+                            <div className="space-y-2">
+                                <p>Crafted from premium {product.fabric} for maximum comfort and longevity.</p>
+                                <ul className="list-disc pl-5 space-y-1 text-stone-500 marker:text-pink-300">
+                                     <li>Machine wash cold with like colors</li>
+                                     <li>Do not bleach</li>
+                                     <li>Tumble dry low</li>
+                                     <li>Cool iron if needed</li>
+                                </ul>
+                            </div>
+                        </Accordion>
+                    )}
+
                     <Accordion title="Delivery & Returns" icon={Truck}>
                          <div className="space-y-3">
                              <div className="flex items-start gap-3">
@@ -554,7 +569,7 @@ const ProductDetailsPage: React.FC = () => {
       </div>
 
        {/* Size Guide Modal */}
-       {isSizeGuideOpen && settings.productPagePromoImage && (
+       {isSizeGuideOpen && !isCosmetics && settings.productPagePromoImage && (
             <div
                 className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
                 onClick={() => setIsSizeGuideOpen(false)}
@@ -581,4 +596,3 @@ const ProductDetailsPage: React.FC = () => {
 };
 
 export default ProductDetailsPage;
-
