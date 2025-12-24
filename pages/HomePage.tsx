@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
@@ -25,6 +26,12 @@ const TrustFactor: React.FC<{ icon: React.ElementType; title: string; desc: stri
     </div>
 );
 
+const BannerSkeleton = () => (
+    <div className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[1.7rem] sm:rounded-[2rem] mx-6 sm:mx-0 overflow-hidden bg-stone-100 animate-shimmer shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-100 via-stone-50 to-stone-100" style={{ backgroundSize: '200% 100%' }}></div>
+    </div>
+);
+
 const HomePage: React.FC = () => {
   const { products, navigate, settings, loading } = useAppStore(state => ({
     products: state.products,
@@ -45,6 +52,9 @@ const HomePage: React.FC = () => {
   
   const newArrivalsDisplay = allNewArrivals.slice(0, homepageNewArrivalsCount || 4);
   const trendingProductsDisplay = allTrendingProducts.slice(0, homepageTrendingCount || 4);
+
+  const isFashionBannerReady = settings.signatureFashionDesktopImage && settings.signatureFashionDesktopImage !== '';
+  const isCosmeticsBannerReady = settings.signatureCosmeticsDesktopImage && settings.signatureCosmeticsDesktopImage !== '';
 
   return (
     <div className="overflow-x-hidden bg-[#FEF9F9]">
@@ -88,50 +98,54 @@ const HomePage: React.FC = () => {
             <SectionTitle title="Signature Collections" subtitle="Shop By Department" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10">
                 {/* Fashion Spotlight */}
-                <div 
-                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[1.7rem] sm:rounded-[2rem] mx-6 sm:mx-0 overflow-hidden group cursor-pointer shadow-2xl"
-                    onClick={() => navigate('/women')}
-                >
-                    <picture>
-                        <source media="(max-width: 640px)" srcSet={settings.signatureFashionMobileImage} />
-                        <img 
-                            src={settings.signatureFashionDesktopImage} 
-                            alt="Fashion Studio" 
-                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                        />
-                    </picture>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12">
-                        <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] mb-2">Exquisite Clothing</span>
-                        <h3 className="text-white text-3xl sm:text-5xl font-black mb-6">The Fashion<br/>Studio</h3>
-                        <div className="flex items-center gap-3 text-white font-bold group/btn">
-                            <span className="border-b-2 border-white pb-1">Discover Collection</span>
-                            <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
+                {!isFashionBannerReady ? <BannerSkeleton /> : (
+                    <div 
+                        className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[1.7rem] sm:rounded-[2rem] mx-6 sm:mx-0 overflow-hidden group cursor-pointer shadow-2xl"
+                        onClick={() => navigate('/women')}
+                    >
+                        <picture>
+                            <source media="(max-width: 640px)" srcSet={settings.signatureFashionMobileImage} />
+                            <img 
+                                src={settings.signatureFashionDesktopImage} 
+                                alt="Fashion Studio" 
+                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                            />
+                        </picture>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12">
+                            <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] mb-2">Exquisite Clothing</span>
+                            <h3 className="text-white text-3xl sm:text-5xl font-black mb-6">The Fashion<br/>Studio</h3>
+                            <div className="flex items-center gap-3 text-white font-bold group/btn">
+                                <span className="border-b-2 border-white pb-1">Discover Collection</span>
+                                <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Beauty Spotlight */}
-                <div 
-                    className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[1.7rem] sm:rounded-[2rem] mx-6 sm:mx-0 overflow-hidden group cursor-pointer shadow-2xl"
-                    onClick={() => navigate('/cosmetics')}
-                >
-                    <picture>
-                        <source media="(max-width: 640px)" srcSet={settings.signatureCosmeticsMobileImage} />
-                        <img 
-                            src={settings.signatureCosmeticsDesktopImage} 
-                            alt="Beauty Rituals" 
-                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                        />
-                    </picture>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12">
-                        <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] mb-2">Radiant Beauty</span>
-                        <h3 className="text-white text-3xl sm:text-5xl font-black mb-6">The Beauty<br/>Rituals</h3>
-                        <div className="flex items-center gap-3 text-white font-bold group/btn">
-                            <span className="border-b-2 border-white pb-1">Shop Essentials</span>
-                            <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
+                {!isCosmeticsBannerReady ? <BannerSkeleton /> : (
+                    <div 
+                        className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[1.7rem] sm:rounded-[2rem] mx-6 sm:mx-0 overflow-hidden group cursor-pointer shadow-2xl"
+                        onClick={() => navigate('/cosmetics')}
+                    >
+                        <picture>
+                            <source media="(max-width: 640px)" srcSet={settings.signatureCosmeticsMobileImage} />
+                            <img 
+                                src={settings.signatureCosmeticsDesktopImage} 
+                                alt="Beauty Rituals" 
+                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                            />
+                        </picture>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12">
+                            <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] mb-2">Radiant Beauty</span>
+                            <h3 className="text-white text-3xl sm:text-5xl font-black mb-6">The Beauty<br/>Rituals</h3>
+                            <div className="flex items-center gap-3 text-white font-bold group/btn">
+                                <span className="border-b-2 border-white pb-1">Shop Essentials</span>
+                                <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </section>
 
