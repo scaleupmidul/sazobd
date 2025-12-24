@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../store';
 import { Save, LoaderCircle, Plus, Trash2, CheckCircle, Monitor, Smartphone } from 'lucide-react';
@@ -171,6 +170,13 @@ const AdminSettingsPage: React.FC = () => {
     const [cosSub, setCosSub] = useState(settings.cosmeticsHeroSubtitle || '');
     const [showCosHeroText, setShowCosHeroText] = useState(settings.showCosmeticsHeroText ?? true);
 
+    // State for Women's page
+    const [womenHero, setWomenHero] = useState(settings.womenHeroImage || '');
+    const [womenMobHero, setWomenMobHero] = useState(settings.womenMobileHeroImage || '');
+    const [womenTitle, setWomenTitle] = useState(settings.womenHeroTitle || '');
+    const [womenSub, setWomenSub] = useState(settings.womenHeroSubtitle || '');
+    const [showWomenHeroText, setShowWomenHeroText] = useState(settings.showWomenHeroText ?? true);
+
     // Signature Collections Backgrounds
     const [sigFashDesk, setSigFashDesk] = useState(settings.signatureFashionDesktopImage || '');
     const [sigFashMob, setSigFashMob] = useState(settings.signatureFashionMobileImage || '');
@@ -210,6 +216,13 @@ const AdminSettingsPage: React.FC = () => {
         setCosTitle(settings.cosmeticsHeroTitle || '');
         setCosSub(settings.cosmeticsHeroSubtitle || '');
         setShowCosHeroText(settings.showCosmeticsHeroText ?? true);
+
+        // Women Settings
+        setWomenHero(settings.womenHeroImage || '');
+        setWomenMobHero(settings.womenMobileHeroImage || '');
+        setWomenTitle(settings.womenHeroTitle || '');
+        setWomenSub(settings.womenHeroSubtitle || '');
+        setShowWomenHeroText(settings.showWomenHeroText ?? true);
 
         // Signature Images
         setSigFashDesk(settings.signatureFashionDesktopImage || '');
@@ -315,12 +328,18 @@ const AdminSettingsPage: React.FC = () => {
                 footerDescription,
                 socialMediaLinks,
                 privacyPolicy,
-                // Cosmetics Hub Settings
+                // Cosmetics Landing Settings
                 cosmeticsHeroImage: cosHero,
                 cosmeticsMobileHeroImage: cosMobHero,
                 cosmeticsHeroTitle: cosTitle,
                 cosmeticsHeroSubtitle: cosSub,
                 showCosmeticsHeroText: showCosHeroText,
+                // Women Landing Settings
+                womenHeroImage: womenHero,
+                womenMobileHeroImage: womenMobHero,
+                womenHeroTitle: womenTitle,
+                womenHeroSubtitle: womenSub,
+                showWomenHeroText: showWomenHeroText,
                 // Explicitly disable promo features as they are removed from UI
                 showCosmeticsPromo: false,
                 // Signature Collection Images
@@ -711,6 +730,46 @@ const AdminSettingsPage: React.FC = () => {
                     </div>
                 </div>
             );
+            case 'women': return (
+                <div className="space-y-6">
+                    <div className="bg-white p-6 rounded-lg shadow-md">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Hero Section Content Visibility</h2>
+                        <div className="p-4 bg-gray-50 rounded-lg border">
+                            <label className="flex items-center justify-between cursor-pointer">
+                                <span className="font-medium text-sm text-gray-800">Show Text & Button on Hero Section</span>
+                                <div className="relative">
+                                    <input type="checkbox" className="sr-only peer" checked={showWomenHeroText} onChange={(e) => setShowWomenHeroText(e.target.checked)} />
+                                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-pink-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                                </div>
+                            </label>
+                            <p className="text-xs text-gray-500 mt-1">If disabled, the hero section will only show the background image without titles, subtitles, or buttons.</p>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-lg shadow-md">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Hero Section Content</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Headline</label>
+                                <input value={womenTitle} onChange={e => setWomenTitle(e.target.value)} placeholder="e.g. Elegance In Every Thread" className="w-full p-3 border rounded-lg bg-white text-black font-bold" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Sub-headline</label>
+                                <textarea value={womenSub} onChange={e => setWomenSub(e.target.value)} placeholder="Brief description..." className="w-full p-3 border rounded-lg h-20 bg-white text-black" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-2 text-xs font-bold text-stone-400 uppercase tracking-widest"><Monitor className="w-3 h-3"/> Desktop Hero Image</label>
+                                    <ImageInput currentImage={womenHero} onImageChange={setWomenHero} options={{maxWidth: 1920, quality: 0.8}} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-2 text-xs font-bold text-stone-400 uppercase tracking-widest"><Smartphone className="w-3 h-3"/> Mobile Hero Image</label>
+                                    <ImageInput currentImage={womenMobHero} onImageChange={setWomenMobHero} options={{maxWidth: 800, quality: 0.8}} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
             default: return null;
         }
     };
@@ -725,6 +784,7 @@ const AdminSettingsPage: React.FC = () => {
                         <TabButton label="Payments & Shipping" isActive={activeTab === 'payments'} onClick={() => setActiveTab('payments')} />
                         <TabButton label="Appearance" isActive={activeTab === 'appearance'} onClick={() => setActiveTab('appearance')} />
                         <TabButton label="Cosmetics" isActive={activeTab === 'cosmetics'} onClick={() => setActiveTab('cosmetics')} />
+                        <TabButton label="Women" isActive={activeTab === 'women'} onClick={() => setActiveTab('women')} />
                         <TabButton label="Content" isActive={activeTab === 'content'} onClick={() => setActiveTab('content')} />
                     </div>
                 </aside>
