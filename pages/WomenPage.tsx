@@ -1,4 +1,3 @@
-
 import React, { useMemo, useEffect, useState } from 'react';
 import { useAppStore } from '../store';
 import ProductCard from '../components/ProductCard';
@@ -11,6 +10,8 @@ import {
   ChevronRight,
   ArrowRight
 } from 'lucide-react';
+
+const PRODUCTS_PER_PAGE = 12;
 
 const ProductCardSkeleton: React.FC = () => (
     <div className="bg-white rounded-lg border border-stone-200 overflow-hidden shadow-lg w-full h-full flex flex-col">
@@ -30,6 +31,7 @@ const WomenPage: React.FC = () => {
     const { products, cart, updateCartQuantity, navigate, loading, ensureAllProductsLoaded, fullProductsLoaded, settings } = useAppStore();
     const [activeFilter, setActiveFilter] = useState('All');
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         if (!fullProductsLoaded) {
@@ -47,6 +49,29 @@ const WomenPage: React.FC = () => {
         return base.filter(p => p.category === activeFilter);
     }, [products, activeFilter]);
 
+    // Reset pagination when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeFilter]);
+
+    // Scroll to grid top on page change
+    useEffect(() => {
+        if (currentPage > 1) {
+            const element = document.getElementById('women-grid');
+            if (element) {
+                const yOffset = -100;
+                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        }
+    }, [currentPage]);
+
+    const totalPages = Math.ceil(womenProducts.length / PRODUCTS_PER_PAGE);
+    const paginatedProducts = useMemo(() => {
+        const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+        return womenProducts.slice(start, start + PRODUCTS_PER_PAGE);
+    }, [womenProducts, currentPage]);
+
     // Automatically get categories that are not "Cosmetics"
     const categories = useMemo(() => {
         const cats = settings.categories.filter(c => c.toLowerCase() !== 'cosmetics');
@@ -61,8 +86,8 @@ const WomenPage: React.FC = () => {
 
     return (
         <div className="bg-[#FFF9F9] min-h-screen relative">
-            {/* --- LUXURY HERO --- */}
-            <section className="relative h-[50vh] sm:h-[65vh] w-full flex items-center overflow-hidden">
+            {/* --- LUXURY HERO (Matched to Home Page Size) --- */}
+            <section className="relative w-full aspect-[4/3] sm:aspect-[16/7] md:aspect-[16/7] lg:aspect-[16/6] xl:aspect-[16/6] flex items-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <picture>
                         <source media="(max-width: 640px)" srcSet={settings.womenMobileHeroImage || "https://picsum.photos/seed/women-hero-mob/600/800"} />
@@ -76,22 +101,24 @@ const WomenPage: React.FC = () => {
                 </div>
 
                 {(settings.showWomenHeroText ?? true) && (
-                    <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-                        <div className="max-w-xl animate-fadeInUp">
-                            <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] sm:text-xs mb-4 block">Exclusive Selection</span>
-                            <h1 className="text-4xl sm:text-7xl font-extrabold text-white leading-[1.1] mb-6 whitespace-pre-line drop-shadow-md">
+                    <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 md:px-16 w-full">
+                        <div className="max-w-xl animate-fadeInUp space-y-2 sm:space-y-4">
+                            <span className="text-pink-400 font-bold uppercase tracking-[0.4em] text-[10px] sm:text-xs mb-1 block">Exclusive Selection</span>
+                            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight drop-shadow-md">
                                 {settings.womenHeroTitle || 'Elegance In\nEvery Thread.'}
                             </h1>
-                            <p className="text-stone-100 text-base sm:text-lg mb-8 max-w-sm leading-relaxed drop-shadow-sm">
+                            <p className="text-stone-100 text-xs sm:text-lg max-w-sm leading-relaxed drop-shadow-sm">
                                 {settings.womenHeroSubtitle || 'Discover timeless silhouettes and premium fabrics designed for the modern woman.'}
                             </p>
-                            <button 
-                                onClick={() => document.getElementById('women-grid')?.scrollIntoView({ behavior: 'smooth' })}
-                                className="bg-white text-stone-900 px-8 py-3.5 rounded-full font-bold hover:bg-pink-600 hover:text-white transition shadow-2xl flex items-center gap-2 group"
-                            >
-                                <span>Shop The Edit</span>
-                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                            </button>
+                            <div className="pt-2">
+                                <button 
+                                    onClick={() => document.getElementById('women-grid')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="bg-white text-stone-900 px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full font-bold text-sm sm:text-base hover:bg-pink-600 hover:text-white transition shadow-2xl flex items-center gap-2 group"
+                                >
+                                    <span>Shop The Edit</span>
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -144,7 +171,7 @@ const WomenPage: React.FC = () => {
                     {loading && womenProducts.length === 0 ? (
                         [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
                     ) : (
-                        womenProducts.map((product, index) => (
+                        paginatedProducts.map((product, index) => (
                             <ProductCard 
                                 key={product.id} 
                                 product={product} 
@@ -153,6 +180,29 @@ const WomenPage: React.FC = () => {
                         ))
                     )}
                 </div>
+
+                {/* Pagination UI */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center space-x-4 mt-12 mb-8 sm:mt-16 sm:mb-12">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="border border-pink-600 text-pink-600 font-medium px-6 py-2 rounded-full hover:bg-pink-600 hover:text-white transition duration-300 active:scale-95 text-sm disabled:bg-transparent disabled:text-pink-300 disabled:border-pink-300 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <span className="text-sm font-medium text-stone-700">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="border border-pink-600 text-pink-600 font-medium px-6 py-2 rounded-full hover:bg-pink-600 hover:text-white transition duration-300 active:scale-95 text-sm disabled:bg-transparent disabled:text-pink-300 disabled:border-pink-300 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
 
                 {womenProducts.length === 0 && !loading && (
                     <div className="py-20 text-center">
