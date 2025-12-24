@@ -17,6 +17,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
     // Use productId (numeric) for the URL if available, fallback to id
     const linkId = product.productId || product.id;
 
+    // Dynamic label based on category to support both Fashion and Cosmetics
+    const infoLabel = product.category.toLowerCase() === 'cosmetics' ? 'Type' : 'Fabric';
+
     return (
         <div 
             className="bg-white rounded-lg border border-stone-200 overflow-hidden transition duration-500 ease-in-out shadow-lg sm:hover:shadow-2xl sm:hover:-translate-y-2 group cursor-pointer h-full flex flex-col"
@@ -53,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
             </div>
             <div className="p-3 sm:p-4 space-y-1.5 flex flex-col flex-1">
                 <h3 className="text-sm sm:text-lg font-medium text-stone-900 truncate" title={product.name}>{product.name}</h3>
-                <p className="text-xs text-pink-600 font-medium">Fabric: {product.fabric}</p>
+                <p className="text-xs text-pink-600 font-medium">{infoLabel}: {product.fabric}</p>
 
                 <div className="pt-2 flex flex-col items-start mt-auto">
                     <div className="flex items-center space-x-2 mb-3">
@@ -90,4 +93,3 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) 
 };
 
 export default memo(ProductCard);
-
