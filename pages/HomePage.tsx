@@ -52,7 +52,7 @@ const HomePage: React.FC = () => {
 
       {/* --- SECTION 1: TRUST BAR (4 Items) --- */}
       <section className="bg-white border-b border-stone-100 py-6 sm:py-10">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 lg:grid-cols-4 divide-stone-100">
                   <TrustFactor 
                     icon={ShieldCheck} 
@@ -81,7 +81,7 @@ const HomePage: React.FC = () => {
           </div>
       </section>
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-8 pt-16 sm:pt-24">
+      <main className="max-w-[1440px] mx-auto px-2 sm:px-6 lg:px-8 pt-16 sm:pt-24">
         
         {/* --- SECTION 2: DUAL CATEGORY SPOTLIGHT --- */}
         <section className="mb-24 sm:mb-36">
