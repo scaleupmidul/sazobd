@@ -1,10 +1,9 @@
-
 import React from 'react';
 import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
 import { useAppStore } from '../store';
 import { Product } from '../types';
-import { ShieldCheck, Truck, Sparkles, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Truck, Sparkles, ArrowRight, CreditCard } from 'lucide-react';
 
 const SectionTitle: React.FC<{ title: string; subtitle?: string; align?: 'center' | 'left' }> = ({ title, subtitle, align = 'center' }) => (
   <div className={`flex flex-col ${align === 'center' ? 'items-center text-center' : 'items-start text-left'} mb-10 sm:mb-16`}>
@@ -16,13 +15,13 @@ const SectionTitle: React.FC<{ title: string; subtitle?: string; align?: 'center
   </div>
 );
 
-const TrustFactor: React.FC<{ icon: React.ElementType; title: string; desc: string }> = ({ icon: Icon, title, desc }) => (
-    <div className="flex flex-col items-center text-center p-6 group">
-        <div className="w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center text-pink-600 mb-4 group-hover:scale-110 transition-transform duration-500">
-            <Icon size={28} strokeWidth={1.5} />
+const TrustFactor: React.FC<{ icon: React.ElementType; title: string; desc: string; className?: string }> = ({ icon: Icon, title, desc, className = "" }) => (
+    <div className={`flex flex-col items-center text-center p-3 sm:p-6 group ${className}`}>
+        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white shadow-lg sm:shadow-xl flex items-center justify-center text-pink-600 mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 border border-stone-50">
+            <Icon className="w-5 h-5 sm:w-7 sm:h-7" strokeWidth={1.5} />
         </div>
-        <h4 className="font-bold text-stone-900 text-sm uppercase tracking-widest mb-1">{title}</h4>
-        <p className="text-stone-500 text-xs leading-relaxed">{desc}</p>
+        <h4 className="font-bold text-stone-900 text-[10px] sm:text-sm uppercase tracking-widest mb-1 leading-tight">{title}</h4>
+        <p className="text-stone-500 text-xs leading-relaxed hidden sm:block">{desc}</p>
     </div>
 );
 
@@ -51,13 +50,33 @@ const HomePage: React.FC = () => {
     <div className="overflow-x-hidden bg-[#FEF9F9]">
       <HeroSlider />
 
-      {/* --- SECTION 1: TRUST BAR --- */}
-      <section className="bg-white border-b border-stone-100 py-10">
+      {/* --- SECTION 1: TRUST BAR (4 Items) --- */}
+      <section className="bg-white border-b border-stone-100 py-6 sm:py-10">
           <div className="max-w-7xl mx-auto px-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-stone-100">
-                  <TrustFactor icon={ShieldCheck} title="Authentic Quality" desc="Curated premium fabrics & original beauty essentials." />
-                  <TrustFactor icon={Truck} title="Express Delivery" desc="Swift delivery across Bangladesh, right to your doorstep." />
-                  <TrustFactor icon={Sparkles} title="Exclusive Styles" desc="Limited edition designs for the modern elegance." />
+              <div className="grid grid-cols-2 lg:grid-cols-4 divide-stone-100">
+                  <TrustFactor 
+                    icon={ShieldCheck} 
+                    title="Authentic Quality" 
+                    desc="Curated premium fabrics & original beauty essentials." 
+                    className="border-r border-b lg:border-b-0 border-stone-50"
+                  />
+                  <TrustFactor 
+                    icon={Truck} 
+                    title="Express Delivery" 
+                    desc="Swift delivery across Bangladesh, right to your doorstep." 
+                    className="border-b lg:border-b-0 lg:border-r border-stone-50"
+                  />
+                  <TrustFactor 
+                    icon={CreditCard} 
+                    title="Secure Payment" 
+                    desc="Safe and encrypted payment options for your peace of mind." 
+                    className="border-r border-stone-50"
+                  />
+                  <TrustFactor 
+                    icon={Sparkles} 
+                    title="Exclusive Styles" 
+                    desc="Limited edition designs for the modern elegance." 
+                  />
               </div>
           </div>
       </section>
@@ -71,7 +90,7 @@ const HomePage: React.FC = () => {
                 {/* Fashion Spotlight */}
                 <div 
                     className="relative aspect-[4/5] sm:aspect-[16/10] rounded-[2rem] overflow-hidden group cursor-pointer shadow-2xl"
-                    onClick={() => navigate('/shop')}
+                    onClick={() => navigate('/women')}
                 >
                     <picture>
                         <source media="(max-width: 640px)" srcSet={settings.signatureFashionMobileImage} />
